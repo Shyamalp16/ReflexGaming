@@ -11,6 +11,7 @@ import { Navbar } from "@/components/navbar"
 import { AnimatedButton } from "@/components/animated-button"
 import { AnimatedText } from "@/components/animated-text"
 import { motion } from "framer-motion"
+import { Button } from "@/components/ui/button"
 
 export default function LandingPage() {
   return (
@@ -105,7 +106,7 @@ export default function LandingPage() {
       </section>
 
       {/* Features Section */}
-      <section id="features" className="py-20 relative overflow-hidden bg-dark-gradient">
+      <section id="features" className="py-20 relative overflow-hidden">
         <div className="container mx-auto px-4 relative z-10">
           <div className="text-center mb-16">
             <AnimatedText className="text-3xl md:text-4xl font-bold mb-4" gradient>
@@ -180,7 +181,7 @@ export default function LandingPage() {
       </section>
 
       {/* Use Cases Section */}
-      <section id="use-cases" className="py-20 relative overflow-hidden bg-dark-gradient">
+      <section id="use-cases" className="py-20 relative overflow-hidden">
         <div className="container mx-auto px-4 relative z-10">
           <div className="text-center mb-16">
             <AnimatedText className="text-3xl md:text-4xl font-bold mb-4" gradient>
@@ -368,7 +369,7 @@ export default function LandingPage() {
       </section>
 
       {/* Pricing Section */}
-      <section id="pricing" className="py-20 relative overflow-hidden bg-dark-gradient">
+      <section id="pricing" className="py-20 relative overflow-hidden">
         <div className="container mx-auto px-4 relative z-10">
           <div className="text-center mb-16">
             <AnimatedText className="text-3xl md:text-4xl font-bold mb-4" gradient>
@@ -444,7 +445,7 @@ export default function LandingPage() {
       </section>
 
       {/* Footer */}
-      <footer className="bg-black border-t border-gray-800 py-12">
+      <footer className="bg-background border-t border-border py-12">
         <div className="container mx-auto px-4">
           <div className="grid md:grid-cols-3 gap-8">
             <div>
@@ -483,7 +484,7 @@ export default function LandingPage() {
               </ul>
             </div>
 
-            <div>
+            <div className="md:-ml-8">
               <h4 className="font-medium mb-4">Resources</h4>
               <ul className="space-y-2">
                 <li>
@@ -500,7 +501,7 @@ export default function LandingPage() {
             </div>
           </div>
 
-          <div className="border-t border-gray-800 mt-12 pt-8 flex flex-col md:flex-row justify-between items-center">
+          <div className="border-t border-border mt-12 pt-8 flex flex-col md:flex-row justify-between items-center">
             <p className="text-gray-400 text-sm">
               © {new Date().getFullYear()} Reflex Cloud Gaming. All rights reserved.
             </p>
