@@ -16,7 +16,7 @@ export function Navbar() {
           animate={{ rotate: 10 }}
           transition={{ duration: 2, repeat: Number.POSITIVE_INFINITY, repeatType: "reverse" }}
         >
-          <Zap className="h-8 w-8 text-teal-500" />
+          <Zap className="h-8 w-8 text-primary" />
         </motion.div>
         <span className="text-xl font-bold gradient-text">Reflex Cloud Gaming</span>
       </Link>
@@ -50,7 +50,7 @@ export function Navbar() {
 
       <div className="flex items-center gap-4">
         <ThemeToggle />
-        <Button variant="outline" className="hidden sm:flex border-teal-500 text-teal-500 hover:bg-teal-950/20" asChild>
+        <Button variant="outline" className="hidden sm:flex border-primary text-primary hover:bg-primary/10 hover:text-primary" asChild>
           <Link href="/login">Log In</Link>
         </Button>
         <AnimatedButton variant="accent" asChild>

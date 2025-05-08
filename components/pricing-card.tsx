@@ -25,13 +25,16 @@ export function PricingCard({
   icon,
   index = 0,
 }: PricingCardProps) {
+  // Determine if this is the "primary themed" card (previously teal, now purple/magenta based on buttonVariant)
+  const isPrimaryThemed = buttonVariant === "default"
+
   return (
     <motion.div
       className={cn(
-        "rounded-xl p-8 border border-border hover:border-teal-500/50 transition-colors card-hover relative overflow-hidden",
-        buttonVariant === "default"
-          ? "bg-gradient-to-br from-teal-900/30 to-teal-900/10"
-          : "bg-gradient-to-br from-orange-900/30 to-orange-900/10",
+        "rounded-xl p-8 border border-border hover:border-primary/50 transition-colors card-hover relative overflow-hidden",
+        isPrimaryThemed
+          ? "bg-gradient-to-br from-purple-400/10 to-purple-500/5"
+          : "bg-gradient-to-br from-pink-300/10 to-pink-400/5",
       )}
       initial={{ opacity: 0, y: 20 }}
       whileInView={{ opacity: 1, y: 0 }}
@@ -43,10 +46,10 @@ export function PricingCard({
         stiffness: 100,
       }}
     >
-      <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-teal-500 to-orange-500 opacity-70"></div>
+      <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-pink-500 to-purple-600 opacity-70"></div>
       <div className="flex items-center gap-3 mb-4">
         <motion.div
-          className={`p-2 rounded-lg ${buttonVariant === "default" ? "bg-teal-900/30" : "bg-orange-900/30"}`}
+          className={`p-2 rounded-lg ${isPrimaryThemed ? "bg-purple-400/10" : "bg-pink-300/10"}`}
           whileHover={{ rotate: 10, scale: 1.1 }}
           transition={{ type: "spring", stiffness: 400, damping: 10 }}
         >
@@ -67,8 +70,8 @@ export function PricingCard({
             viewport={{ once: true }}
             transition={{ delay: 0.1 * idx + 0.2 * index }}
           >
-            <div className="mt-0.5 flex-shrink-0 rounded-full bg-green-500/20 p-1">
-              <Check className="h-4 w-4 text-green-500" />
+            <div className="mt-0.5 flex-shrink-0 rounded-full bg-primary/10 p-1">
+              <Check className="h-4 w-4 text-primary/80" />
             </div>
             <span className="text-muted-foreground">{feature}</span>
           </motion.li>
@@ -78,11 +81,12 @@ export function PricingCard({
       <motion.div whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }}>
         <Button
           variant={buttonVariant}
-          className={
-            buttonVariant === "default"
-              ? "w-full bg-gradient-to-r from-teal-600 to-teal-700 hover:from-teal-700 hover:to-teal-800"
-              : "w-full border-teal-500 text-teal-500 hover:bg-teal-950/20"
-          }
+          className={cn(
+            "w-full",
+            isPrimaryThemed
+              ? "bg-gradient-to-r from-primary to-purple-700 hover:from-purple-700 hover:to-primary"
+              : "border-pink-500 text-pink-500 hover:bg-pink-500/10 dark:hover:bg-pink-700/20"
+          )}
         >
           {buttonText}
         </Button>

@@ -1,6 +1,7 @@
 "use client"
 
-import type { ReactNode } from "react"
+import type { ReactNode, ReactElement } from "react"
+import React from 'react'
 import { motion } from "framer-motion"
 import { cn } from "@/lib/utils"
 
@@ -16,7 +17,7 @@ export function FeatureCard({ icon, title, description, className, index = 0 }: 
   return (
     <motion.div
       className={cn(
-        "rounded-xl p-6 border border-border hover:border-teal-500/50 transition-colors card-hover relative overflow-hidden",
+        "rounded-xl p-6 border border-border hover:border-primary/50 transition-colors card-hover relative overflow-hidden",
         className,
       )}
       initial={{ opacity: 0, y: 20 }}
@@ -29,8 +30,10 @@ export function FeatureCard({ icon, title, description, className, index = 0 }: 
         stiffness: 100,
       }}
     >
-      <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-teal-500 to-orange-500 opacity-70"></div>
-      <div className="mb-4 relative">{icon}</div>
+      <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-pink-500 to-purple-600 opacity-70"></div>
+      <div className="mb-4 relative">
+        {React.isValidElement(icon) ? React.cloneElement(icon as ReactElement<{ className?: string }>, { className: cn((icon.props as { className?: string }).className, "h-10 w-10 text-primary") }) : icon}
+      </div>
       <h3 className="text-xl font-bold mb-2">{title}</h3>
       <p className="text-muted-foreground">{description}</p>
     </motion.div>

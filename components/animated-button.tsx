@@ -26,8 +26,6 @@ export function AnimatedButton({
   className,
   variant = "default",
   asChild = false,
-  onClick,
-  type = "button",
   ...restProps // These are the remaining ButtonHTMLAttributes
 }: AnimatedButtonProps) {
 
@@ -35,9 +33,9 @@ export function AnimatedButton({
     "relative inline-flex items-center justify-center rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:opacity-50 disabled:pointer-events-none ring-offset-background h-10 py-2 px-4"
 
   const variantClasses = {
-    default: "bg-teal-600 text-white hover:bg-teal-700",
-    outline: "border border-teal-500 text-teal-500 hover:bg-teal-950/20",
-    accent: "bg-orange-600 text-white hover:bg-orange-700",
+    default: "bg-primary text-primary-foreground hover:bg-primary/90",
+    outline: "border-primary text-primary hover:bg-primary/10",
+    accent: "bg-pink-500 text-white hover:bg-pink-600",
   }
 
   const framerMotionProps: HTMLMotionProps<"button"> = {
@@ -47,37 +45,31 @@ export function AnimatedButton({
   }
 
   if (asChild) {
-    // When asChild is true, Slot handles prop merging.
-    // Pass all ...restProps (which are ButtonHTMLAttributes not defined in AnimatedButtonOwnProps)
-    // and explicitly passed props like className, children to Slot.
-    // The Link component will be the child and receive its necessary props.
+    // Slot will pass all ...restProps (including href, onClick from Link, etc.) to the child
     return (
       <Slot 
         className={cn(baseClasses, variantClasses[variant], className)} 
-        onClick={onClick} // onClick from AnimatedButtonProps if any
-        type={type}       // type from AnimatedButtonProps if any
-        {...restProps}    // Other HTML attributes for the Link/Slot
+        {...restProps} // All other props (href, type, onClick for Link) come from here
       >
         {children}
       </Slot>
     )
   }
 
-  // When not asChild, render a motion.button directly.
-  // Construct props carefully.
+  // When not asChild, construct props for motion.button carefully
+  const { onClick, type = "button", disabled, ...htmlButtonAttributes } = restProps as ButtonHTMLAttributes<HTMLButtonElement>
+  
   const buttonProps: HTMLMotionProps<"button"> = {
     ...framerMotionProps,
     className: cn(baseClasses, variantClasses[variant], className),
     onClick: onClick,
     type: type,
-    disabled: restProps.disabled, // Explicitly pick from restProps
-    // Add other safe attributes from restProps as needed, e.g.:
-    // 'aria-label': restProps['aria-label'],
-  };
-  if (restProps.hasOwnProperty('aria-label')) {
-    buttonProps['aria-label'] = restProps['aria-label'];
+    disabled: disabled,
   }
-  // Add more safe props from restProps here if they are commonly used
+  if (htmlButtonAttributes.hasOwnProperty('aria-label')) {
+    buttonProps['aria-label'] = htmlButtonAttributes['aria-label']
+  }
+  // Add any other specific safe HTML attributes from htmlButtonAttributes to buttonProps as needed
 
   return (
     <motion.button {...buttonProps}>

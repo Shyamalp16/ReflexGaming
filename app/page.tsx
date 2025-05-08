@@ -50,7 +50,7 @@ export default function LandingPage() {
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 0.5 }}
           >
-            <div className="absolute inset-0 bg-gradient-to-r from-teal-900/20 to-orange-900/20 z-10 rounded-xl"></div>
+            <div className="absolute inset-0 bg-gradient-to-r from-primary/10 to-pink-700/10 z-10 rounded-xl"></div>
             <Image
               src="/placeholder.svg?height=800&width=1200"
               alt="P2P Gaming Connection"
@@ -64,19 +64,19 @@ export default function LandingPage() {
               animate={{ opacity: 1 }}
               transition={{ delay: 0.5, duration: 0.5 }}
             >
-              <div className="bg-black/60 dark:bg-black/60 bg-white/80 p-6 rounded-xl max-w-md backdrop-blur-sm border border-teal-500/20">
+              <div className="bg-black/60 dark:bg-black/60 p-6 rounded-xl max-w-md backdrop-blur-sm border border-primary/20 dark:border-pink-700/20">
                 <div className="flex justify-between mb-4">
                   <div className="flex items-center gap-2">
                     <motion.div
                       animate={{ y: [0, -5, 0] }}
                       transition={{ duration: 2, repeat: Number.POSITIVE_INFINITY }}
                     >
-                      <Server className="h-5 w-5 text-teal-400" />
+                      <Server className="h-5 w-5 text-primary" />
                     </motion.div>
                     <span className="text-sm font-medium">Host</span>
                   </div>
                   <motion.div
-                    className="h-0.5 w-20 bg-gradient-to-r from-teal-500 to-orange-500 my-auto"
+                    className="h-0.5 w-20 bg-gradient-to-r from-pink-500 to-purple-600 my-auto"
                     animate={{
                       background: [
                         "linear-gradient(to right, #14b8a6, #f97316)",
@@ -91,7 +91,7 @@ export default function LandingPage() {
                       animate={{ y: [0, -5, 0] }}
                       transition={{ duration: 2, repeat: Number.POSITIVE_INFINITY, delay: 1 }}
                     >
-                      <Laptop className="h-5 w-5 text-orange-400" />
+                      <Laptop className="h-5 w-5 text-pink-500" />
                     </motion.div>
                     <span className="text-sm font-medium">Gamer</span>
                   </div>
@@ -194,20 +194,20 @@ export default function LandingPage() {
 
           <div className="grid md:grid-cols-2 gap-12">
             <motion.div
-              className="bg-card rounded-xl p-8 border border-border hover:border-teal-500/50 transition-colors card-hover relative overflow-hidden"
+              className="bg-card rounded-xl p-8 border border-border hover:border-primary/50 transition-colors card-hover relative overflow-hidden"
               initial={{ opacity: 0, x: -50 }}
               whileInView={{ opacity: 1, x: 0 }}
               viewport={{ once: true, margin: "-100px" }}
               transition={{ duration: 0.5 }}
             >
-              <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-teal-500 to-teal-700 opacity-70"></div>
+              <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-primary to-purple-700 opacity-70"></div>
               <div className="flex items-center gap-4 mb-6">
                 <motion.div
                   className="p-3 rounded-lg"
                   whileHover={{ rotate: 10, scale: 1.1 }}
                   transition={{ type: "spring", stiffness: 400, damping: 10 }}
                 >
-                  <Laptop className="h-8 w-8 text-teal-400" />
+                  <Laptop className="h-8 w-8 text-primary" />
                 </motion.div>
                 <h3 className="text-2xl font-bold">For Gamers</h3>
               </div>
@@ -220,8 +220,8 @@ export default function LandingPage() {
                   transition={{ delay: 0.1 }}
                 >
                   <div className="mt-1 flex-shrink-0">
-                    <div className="h-5 w-5 rounded-full bg-teal-600 flex items-center justify-center">
-                      <ArrowRight className="h-3 w-3" />
+                    <div className="h-5 w-5 rounded-full bg-primary flex items-center justify-center">
+                      <ArrowRight className="h-3 w-3 text-primary-foreground" />
                     </div>
                   </div>
                   <p>Play AAA titles on budget laptops or older PCs without hardware upgrades</p>
@@ -234,8 +234,8 @@ export default function LandingPage() {
                   transition={{ delay: 0.2 }}
                 >
                   <div className="mt-1 flex-shrink-0">
-                    <div className="h-5 w-5 rounded-full bg-teal-600 flex items-center justify-center">
-                      <ArrowRight className="h-3 w-3" />
+                    <div className="h-5 w-5 rounded-full bg-primary flex items-center justify-center">
+                      <ArrowRight className="h-3 w-3 text-primary-foreground" />
                     </div>
                   </div>
                   <p>Access games requiring high specs without investing in expensive hardware</p>
@@ -248,8 +248,8 @@ export default function LandingPage() {
                   transition={{ delay: 0.3 }}
                 >
                   <div className="mt-1 flex-shrink-0">
-                    <div className="h-5 w-5 rounded-full bg-teal-600 flex items-center justify-center">
-                      <ArrowRight className="h-3 w-3" />
+                    <div className="h-5 w-5 rounded-full bg-primary flex items-center justify-center">
+                      <ArrowRight className="h-3 w-3 text-primary-foreground" />
                     </div>
                   </div>
                   <p>Choose from different resolution presets to match your budget and needs</p>
@@ -262,8 +262,8 @@ export default function LandingPage() {
                   transition={{ delay: 0.4 }}
                 >
                   <div className="mt-1 flex-shrink-0">
-                    <div className="h-5 w-5 rounded-full bg-teal-600 flex items-center justify-center">
-                      <ArrowRight className="h-3 w-3" />
+                    <div className="h-5 w-5 rounded-full bg-primary flex items-center justify-center">
+                      <ArrowRight className="h-3 w-3 text-primary-foreground" />
                     </div>
                   </div>
                   <p>Play anywhere with a stable internet connection</p>
@@ -272,20 +272,20 @@ export default function LandingPage() {
             </motion.div>
 
             <motion.div
-              className="bg-card rounded-xl p-8 border border-border hover:border-orange-500/50 transition-colors card-hover relative overflow-hidden"
+              className="bg-card rounded-xl p-8 border border-border hover:border-pink-500/50 transition-colors card-hover relative overflow-hidden"
               initial={{ opacity: 0, x: 50 }}
               whileInView={{ opacity: 1, x: 0 }}
               viewport={{ once: true, margin: "-100px" }}
               transition={{ duration: 0.5 }}
             >
-              <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-orange-500 to-orange-700 opacity-70"></div>
+              <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-pink-500 to-pink-700 opacity-70"></div>
               <div className="flex items-center gap-4 mb-6">
                 <motion.div
                   className="p-3 rounded-lg"
                   whileHover={{ rotate: 10, scale: 1.1 }}
                   transition={{ type: "spring", stiffness: 400, damping: 10 }}
                 >
-                  <Server className="h-8 w-8 text-orange-400" />
+                  <Server className="h-8 w-8 text-pink-500" />
                 </motion.div>
                 <h3 className="text-2xl font-bold">For Hosts</h3>
               </div>
@@ -298,8 +298,8 @@ export default function LandingPage() {
                   transition={{ delay: 0.1 }}
                 >
                   <div className="mt-1 flex-shrink-0">
-                    <div className="h-5 w-5 rounded-full bg-orange-600 flex items-center justify-center">
-                      <ArrowRight className="h-3 w-3" />
+                    <div className="h-5 w-5 rounded-full bg-pink-500 flex items-center justify-center">
+                      <ArrowRight className="h-3 w-3 text-primary-foreground" />
                     </div>
                   </div>
                   <p>Generate passive income from your existing gaming hardware</p>
@@ -312,8 +312,8 @@ export default function LandingPage() {
                   transition={{ delay: 0.2 }}
                 >
                   <div className="mt-1 flex-shrink-0">
-                    <div className="h-5 w-5 rounded-full bg-orange-600 flex items-center justify-center">
-                      <ArrowRight className="h-3 w-3" />
+                    <div className="h-5 w-5 rounded-full bg-pink-500 flex items-center justify-center">
+                      <ArrowRight className="h-3 w-3 text-primary-foreground" />
                     </div>
                   </div>
                   <p>Earn based on your hardware specifications</p>
@@ -326,8 +326,8 @@ export default function LandingPage() {
                   transition={{ delay: 0.3 }}
                 >
                   <div className="mt-1 flex-shrink-0">
-                    <div className="h-5 w-5 rounded-full bg-orange-600 flex items-center justify-center">
-                      <ArrowRight className="h-3 w-3" />
+                    <div className="h-5 w-5 rounded-full bg-pink-500 flex items-center justify-center">
+                      <ArrowRight className="h-3 w-3 text-primary-foreground" />
                     </div>
                   </div>
                   <p>Control when your system is available for hosting</p>
@@ -340,8 +340,8 @@ export default function LandingPage() {
                   transition={{ delay: 0.4 }}
                 >
                   <div className="mt-1 flex-shrink-0">
-                    <div className="h-5 w-5 rounded-full bg-orange-600 flex items-center justify-center">
-                      <ArrowRight className="h-3 w-3" />
+                    <div className="h-5 w-5 rounded-full bg-pink-500 flex items-center justify-center">
+                      <ArrowRight className="h-3 w-3 text-primary-foreground" />
                     </div>
                   </div>
                   <p>Secure system with end-to-end encryption and sandboxed environment</p>
@@ -393,7 +393,7 @@ export default function LandingPage() {
               ]}
               buttonText="Find a Game Host"
               buttonVariant="default"
-              icon={<Gamepad2 className="h-6 w-6 text-teal-400" />}
+              icon={<Gamepad2 className="h-6 w-6 text-primary" />}
               index={0}
             />
 
@@ -409,7 +409,7 @@ export default function LandingPage() {
               ]}
               buttonText="Become a Host"
               buttonVariant="outline"
-              icon={<Server className="h-6 w-6 text-orange-400" />}
+              icon={<Server className="h-6 w-6 text-pink-500" />}
               index={1}
             />
           </div>
@@ -417,8 +417,7 @@ export default function LandingPage() {
       </section>
 
       {/* Final CTA Section */}
-      <section className="py-20 relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-r from-teal-900/20 to-orange-900/20 animate-gradient"></div>
+      <section className="pt-20 pb-10 relative overflow-hidden">
         <div className="container mx-auto px-4 text-center relative z-10">
           <AnimatedText className="text-3xl md:text-4xl font-bold mb-6" gradient>
             Ready to Transform Your Gaming Experience?
@@ -445,39 +444,39 @@ export default function LandingPage() {
       </section>
 
       {/* Footer */}
-      <footer className="bg-background border-t border-border py-12">
+      <footer className="bg-background border-border border-t-transparent pt-6 pb-12">
         <div className="container mx-auto px-4">
           <div className="grid md:grid-cols-3 gap-8">
             <div>
               <div className="flex items-center gap-2 mb-4">
-                <Zap className="h-6 w-6 text-teal-500" />
+                <Zap className="h-6 w-6 text-primary" />
                 <span className="text-lg font-bold gradient-text">Reflex Cloud Gaming</span>
               </div>
-              <p className="text-gray-400 text-sm">
+              <p className="text-muted-foreground text-sm">
                 The future of peer-to-peer cloud gaming. Play anywhere, earn by hosting.
               </p>
             </div>
 
             <div>
-              <h4 className="font-medium mb-4">Platform</h4>
+              <h4 className="font-medium mb-4 text-foreground">Platform</h4>
               <ul className="space-y-2">
                 <li>
-                  <Link href="#" className="text-gray-400 hover:text-teal-400 text-sm transition-colors">
+                  <Link href="#" className="text-muted-foreground hover:text-primary text-sm transition-colors">
                     Features
                   </Link>
                 </li>
                 <li>
-                  <Link href="#" className="text-gray-400 hover:text-teal-400 text-sm transition-colors">
+                  <Link href="#" className="text-muted-foreground hover:text-primary text-sm transition-colors">
                     How It Works
                   </Link>
                 </li>
                 <li>
-                  <Link href="#" className="text-gray-400 hover:text-teal-400 text-sm transition-colors">
+                  <Link href="#" className="text-muted-foreground hover:text-primary text-sm transition-colors">
                     Use Cases
                   </Link>
                 </li>
                 <li>
-                  <Link href="#" className="text-gray-400 hover:text-teal-400 text-sm transition-colors">
+                  <Link href="#" className="text-muted-foreground hover:text-primary text-sm transition-colors">
                     Pricing
                   </Link>
                 </li>
@@ -485,15 +484,15 @@ export default function LandingPage() {
             </div>
 
             <div className="md:-ml-8">
-              <h4 className="font-medium mb-4">Resources</h4>
+              <h4 className="font-medium mb-4 text-foreground">Resources</h4>
               <ul className="space-y-2">
                 <li>
-                  <Link href="#" className="text-gray-400 hover:text-teal-400 text-sm transition-colors">
+                  <Link href="#" className="text-muted-foreground hover:text-primary text-sm transition-colors">
                     Download Client
                   </Link>
                 </li>
                 <li>
-                  <Link href="#" className="text-gray-400 hover:text-teal-400 text-sm transition-colors">
+                  <Link href="#" className="text-muted-foreground hover:text-primary text-sm transition-colors">
                     Support
                   </Link>
                 </li>
@@ -502,17 +501,17 @@ export default function LandingPage() {
           </div>
 
           <div className="border-t border-border mt-12 pt-8 flex flex-col md:flex-row justify-between items-center">
-            <p className="text-gray-400 text-sm">
+            <p className="text-muted-foreground text-sm">
               © {new Date().getFullYear()} Reflex Cloud Gaming. All rights reserved.
             </p>
             <div className="flex gap-6 mt-4 md:mt-0">
-              <Link href="#" className="text-gray-400 hover:text-teal-400 text-sm transition-colors">
+              <Link href="#" className="text-muted-foreground hover:text-primary text-sm transition-colors">
                 Terms
               </Link>
-              <Link href="#" className="text-gray-400 hover:text-teal-400 text-sm transition-colors">
+              <Link href="#" className="text-muted-foreground hover:text-primary text-sm transition-colors">
                 Privacy
               </Link>
-              <Link href="#" className="text-gray-400 hover:text-teal-400 text-sm transition-colors">
+              <Link href="#" className="text-muted-foreground hover:text-primary text-sm transition-colors">
                 Cookies
               </Link>
             </div>

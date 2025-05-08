@@ -10,7 +10,7 @@ export function HowItWorks() {
       <TabsList className="grid w-full grid-cols-2 mb-8">
         <TabsTrigger
           value="gamers"
-          className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-teal-600 data-[state=active]:to-teal-700"
+          className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-primary data-[state=active]:to-purple-700 data-[state=active]:text-primary-foreground"
         >
           <div className="flex items-center gap-2">
             <Laptop className="h-4 w-4" />
@@ -19,7 +19,7 @@ export function HowItWorks() {
         </TabsTrigger>
         <TabsTrigger
           value="hosts"
-          className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-orange-600 data-[state=active]:to-orange-700"
+          className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-pink-500 data-[state=active]:to-pink-700 data-[state=active]:text-primary-foreground"
         >
           <div className="flex items-center gap-2">
             <Server className="h-4 w-4" />
@@ -35,7 +35,7 @@ export function HowItWorks() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
         >
-          <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-teal-500 to-teal-700 opacity-70"></div>
+          <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-primary to-purple-700 opacity-70"></div>
           <div className="grid md:grid-cols-2 gap-8">
             <div className="space-y-8">
               <motion.div
@@ -44,7 +44,7 @@ export function HowItWorks() {
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ delay: 0.1 }}
               >
-                <div className="flex-shrink-0 h-10 w-10 rounded-full bg-gradient-to-r from-teal-600 to-teal-700 flex items-center justify-center text-lg font-bold">
+                <div className="flex-shrink-0 h-10 w-10 rounded-full bg-gradient-to-r from-primary to-purple-700 flex items-center justify-center text-lg font-bold text-primary-foreground">
                   1
                 </div>
                 <div>
@@ -61,7 +61,7 @@ export function HowItWorks() {
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ delay: 0.2 }}
               >
-                <div className="flex-shrink-0 h-10 w-10 rounded-full bg-gradient-to-r from-teal-600 to-teal-700 flex items-center justify-center text-lg font-bold">
+                <div className="flex-shrink-0 h-10 w-10 rounded-full bg-gradient-to-r from-primary to-purple-700 flex items-center justify-center text-lg font-bold text-primary-foreground">
                   2
                 </div>
                 <div>
@@ -79,7 +79,7 @@ export function HowItWorks() {
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ delay: 0.3 }}
               >
-                <div className="flex-shrink-0 h-10 w-10 rounded-full bg-gradient-to-r from-teal-600 to-teal-700 flex items-center justify-center text-lg font-bold">
+                <div className="flex-shrink-0 h-10 w-10 rounded-full bg-gradient-to-r from-primary to-purple-700 flex items-center justify-center text-lg font-bold text-primary-foreground">
                   3
                 </div>
                 <div>
@@ -96,7 +96,7 @@ export function HowItWorks() {
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ delay: 0.4 }}
               >
-                <div className="flex-shrink-0 h-10 w-10 rounded-full bg-gradient-to-r from-teal-600 to-teal-700 flex items-center justify-center text-lg font-bold">
+                <div className="flex-shrink-0 h-10 w-10 rounded-full bg-gradient-to-r from-primary to-purple-700 flex items-center justify-center text-lg font-bold text-primary-foreground">
                   4
                 </div>
                 <div>
@@ -109,9 +109,9 @@ export function HowItWorks() {
             </div>
 
             <div className="relative rounded-xl overflow-hidden h-[400px]">
-              <div className="absolute inset-0 bg-gradient-to-b from-teal-900/20 to-teal-900/40 z-10 rounded-xl"></div>
+              <div className="absolute inset-0 bg-gradient-to-b from-primary/10 to-purple-700/20 z-10 rounded-xl"></div>
               <motion.div
-                className="absolute bottom-0 left-0 right-0 p-6 bg-black/60 backdrop-blur-sm z-20 border-t border-teal-500/20"
+                className="absolute bottom-0 left-0 right-0 p-6 bg-black/60 backdrop-blur-sm z-20 border-t border-primary/30 dark:border-purple-700/30"
                 initial={{ y: 20, opacity: 0 }}
                 animate={{ y: 0, opacity: 1 }}
                 transition={{ delay: 0.5 }}
@@ -133,7 +133,7 @@ export function HowItWorks() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
         >
-          <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-orange-500 to-orange-700 opacity-70"></div>
+          <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-pink-500 to-pink-700 opacity-70"></div>
           <div className="grid md:grid-cols-2 gap-8">
             <div className="space-y-8">
               <motion.div
@@ -142,7 +142,7 @@ export function HowItWorks() {
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ delay: 0.1 }}
               >
-                <div className="flex-shrink-0 h-10 w-10 rounded-full bg-gradient-to-r from-orange-600 to-orange-700 flex items-center justify-center text-lg font-bold">
+                <div className="flex-shrink-0 h-10 w-10 rounded-full bg-gradient-to-r from-pink-500 to-pink-700 flex items-center justify-center text-lg font-bold text-primary-foreground">
                   1
                 </div>
                 <div>
@@ -159,7 +159,7 @@ export function HowItWorks() {
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ delay: 0.2 }}
               >
-                <div className="flex-shrink-0 h-10 w-10 rounded-full bg-gradient-to-r from-orange-600 to-orange-700 flex items-center justify-center text-lg font-bold">
+                <div className="flex-shrink-0 h-10 w-10 rounded-full bg-gradient-to-r from-pink-500 to-pink-700 flex items-center justify-center text-lg font-bold text-primary-foreground">
                   2
                 </div>
                 <div>
@@ -177,7 +177,7 @@ export function HowItWorks() {
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ delay: 0.3 }}
               >
-                <div className="flex-shrink-0 h-10 w-10 rounded-full bg-gradient-to-r from-orange-600 to-orange-700 flex items-center justify-center text-lg font-bold">
+                <div className="flex-shrink-0 h-10 w-10 rounded-full bg-gradient-to-r from-pink-500 to-pink-700 flex items-center justify-center text-lg font-bold text-primary-foreground">
                   3
                 </div>
                 <div>
@@ -194,7 +194,7 @@ export function HowItWorks() {
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ delay: 0.4 }}
               >
-                <div className="flex-shrink-0 h-10 w-10 rounded-full bg-gradient-to-r from-orange-600 to-orange-700 flex items-center justify-center text-lg font-bold">
+                <div className="flex-shrink-0 h-10 w-10 rounded-full bg-gradient-to-r from-pink-500 to-pink-700 flex items-center justify-center text-lg font-bold text-primary-foreground">
                   4
                 </div>
                 <div>
@@ -207,9 +207,9 @@ export function HowItWorks() {
             </div>
 
             <div className="relative rounded-xl overflow-hidden h-[400px]">
-              <div className="absolute inset-0 bg-gradient-to-b from-orange-900/20 to-orange-900/40 z-10 rounded-xl"></div>
+              <div className="absolute inset-0 bg-gradient-to-b from-pink-700/10 to-pink-800/20 z-10 rounded-xl"></div>
               <motion.div
-                className="absolute bottom-0 left-0 right-0 p-6 bg-black/60 backdrop-blur-sm z-20 border-t border-orange-500/20"
+                className="absolute bottom-0 left-0 right-0 p-6 bg-black/60 backdrop-blur-sm z-20 border-t border-pink-500/30 dark:border-pink-700/30"
                 initial={{ y: 20, opacity: 0 }}
                 animate={{ y: 0, opacity: 1 }}
                 transition={{ delay: 0.5 }}
