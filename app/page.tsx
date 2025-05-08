@@ -12,6 +12,7 @@ import { AnimatedButton } from "@/components/animated-button"
 import { AnimatedText } from "@/components/animated-text"
 import { motion } from "framer-motion"
 import { Button } from "@/components/ui/button"
+import { TypeAnimation } from "react-type-animation"
 
 export default function LandingPage() {
   return (
@@ -23,9 +24,28 @@ export default function LandingPage() {
       <section className="container mx-auto py-20 px-4">
         <div className="grid md:grid-cols-2 gap-12 items-center">
           <div className="space-y-6">
-            <AnimatedText className="text-4xl md:text-5xl lg:text-6xl font-bold leading-tight" gradient>
-              Play AAA Games Anywhere via Peer-to-Peer Power
-            </AnimatedText>
+            <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold leading-tight gradient-text">
+              Play AAA Games{" "}
+              <TypeAnimation
+                sequence={[
+                  "Instantly, No 100GB Game Downloads.",
+                  2500,
+                  "With Reflex-Ready Speed.",
+                  2500,
+                  "On Demand, Pay Per Session.",
+                  2500,
+                  "Like You're Really There.",
+                  2500,
+                  "Without Dropping Bucks on a Gaming Rig.",
+                  2500,
+                ]}
+                wrapper="span"
+                speed={50}
+                cursor={true}
+                repeat={Infinity}
+                style={{ display: "inline-block" }}
+              />
+            </h1>
             <AnimatedText className="text-xl text-muted-foreground" delay={0.2}>
               Connect directly to powerful host PCs for ultra-low latency remote gameplay, or earn by sharing your rig
               with the gaming community.
