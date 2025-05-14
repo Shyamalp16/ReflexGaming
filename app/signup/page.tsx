@@ -18,11 +18,20 @@ export default function SignupPage() {
   const [name, setName] = useState("")
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
+  const [confirmPassword, setConfirmPassword] = useState("")
   const [isLoading, setIsLoading] = useState(false)
+  const [error, setError] = useState("")
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setIsLoading(true)
+    setError("")
+
+    if (password !== confirmPassword) {
+      setError("Passwords do not match.")
+      setIsLoading(false)
+      return
+    }
 
     // Simulate signup process
     setTimeout(() => {
@@ -73,7 +82,7 @@ export default function SignupPage() {
                     <Input
                       id="email"
                       type="email"
-                      placeholder="your.email@example.com"
+                      placeholder="light.yagami@example.com"
                       className="pl-10"
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
@@ -91,14 +100,37 @@ export default function SignupPage() {
                       placeholder="••••••••"
                       className="pl-10"
                       value={password}
-                      onChange={(e) => setPassword(e.target.value)}
+                      onChange={(e) => {
+                        setPassword(e.target.value)
+                        if (error) setError("")
+                      }}
                       required
                     />
                   </div>
                   <p className="text-xs text-muted-foreground">Password must be at least 8 characters long</p>
                 </div>
+                <div className="space-y-2">
+                <Label htmlFor="confirmPassword">Confirm Password</Label>
+                <div className="relative">
+                  <Lock className="absolute left-3 top-2.5 h-5 w-5 text-muted-foreground" />
+                  <Input
+                    id="confirmPassword"
+                    type="password"
+                    placeholder="••••••••"
+                    className="pl-10"
+                    value={confirmPassword}
+                    onChange={(e) => {
+                      setConfirmPassword(e.target.value)
+                      if (error) setError("")
+                    }}
+                    required
+                  />
+                </div>
+                  <p className="text-xs text-muted-foreground">Both password fields must match</p>
+                </div>
               </CardContent>
               <CardFooter className="flex flex-col space-y-4">
+                {error && <p className="text-sm text-red-500 dark:text-red-400">{error}</p>}
                 <AnimatedButton type="submit" className="w-full" disabled={isLoading}>
                   {isLoading ? "Creating account..." : "Create account"}
                 </AnimatedButton>
