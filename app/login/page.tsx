@@ -39,7 +39,7 @@ export default function LoginPage() {
     // Simulate login process
     if(data.user){
       console.log("Login Successful")
-      router.push("#")
+      router.push("/dashboard")
     }
   }
 
