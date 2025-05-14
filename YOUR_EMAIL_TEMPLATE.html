@@ -1,0 +1,17 @@
+                        <!-- Content -->
+                        <tr>
+                            <td class="content">
+                                <p>Hi {{ .UserName }},</p> <!-- Personalize if you have the username -->
+                                <p>We received a request to reset the password for your <span class="app-name">Reflex Connect</span> account.</p>
+                                <p>If you requested this password reset, please click the button below to choose a new password. The link will take you to our secure password update page (it should start with <code>http://localhost:3000/auth/update-password</code> and will have a unique token appended for your security).</p>
+                                <p>If you didn't make this request, you can safely ignore this email.</p>
+                                
+                                <div class="button-container">
+                                    <!-- The Go template variable for the password reset URL -->
+                                    <a href="{{ .ConfirmationURL }}" target="_blank" class="button">Reset Your Password</a>
+                                </div>
+                                
+                                <p>If the button above doesn't work, please copy and paste the following link into your web browser. It will also start with <code>http://localhost:3000/auth/update-password</code>:</p>
+                                <p><a href="{{ .ConfirmationURL }}" target="_blank" style="color: #5D3FD3; text-decoration: underline; word-break: break-all;">{{ .ConfirmationURL }}</a></p>
+                                
+                                <p class="security-note">For your security, this link will expire in 1 hour (or your configured duration). After that, you'll need to request another password reset.</p> 

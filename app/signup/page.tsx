@@ -13,6 +13,9 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { AnimatedButton } from "@/components/animated-button"
 import { Navbar } from "@/components/navbar"
 
+// exported functions
+import { signUpNewUser } from "@/lib/supabase/auth"
+
 export default function SignupPage() {
   const router = useRouter()
   const [name, setName] = useState("")
@@ -33,11 +36,18 @@ export default function SignupPage() {
       return
     }
 
-    // Simulate signup process
-    setTimeout(() => {
-      setIsLoading(false)
-      router.push("/login")
-    }, 1500)
+    const {data, error: signUpError} = await signUpNewUser({email, password})
+    setIsLoading(false)
+
+    if(signUpError){
+      setError(signUpError.message)
+      return
+    }
+
+    if(data.user){
+      //will work on a email verification page
+      router.push("/auth/verify-email")
+    }
   }
 
   return (

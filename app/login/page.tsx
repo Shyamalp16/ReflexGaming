@@ -13,21 +13,34 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { AnimatedButton } from "@/components/animated-button"
 import { Navbar } from "@/components/navbar"
 
+//exported functions
+import { signInUser } from "@/lib/supabase/auth"
+
 export default function LoginPage() {
   const router = useRouter()
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
   const [isLoading, setIsLoading] = useState(false)
+  const [error, setError] = useState("")
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setIsLoading(true)
+    setError("")
+
+    const {data, error: signInError} = await signInUser({email, password})
+    setIsLoading(false)
+
+    if(signInError){
+      setError(signInError.message)
+      return
+    }
 
     // Simulate login process
-    setTimeout(() => {
-      setIsLoading(false)
-      router.push("/")
-    }, 1500)
+    if(data.user){
+      console.log("Login Successful")
+      router.push("#")
+    }
   }
 
   return (
@@ -60,7 +73,10 @@ export default function LoginPage() {
                       placeholder="your.email@example.com"
                       className="pl-10"
                       value={email}
-                      onChange={(e) => setEmail(e.target.value)}
+                      onChange={(e) => {
+                        setEmail(e.target.value)
+                        if (error) setError("")
+                      }}
                       required
                     />
                   </div>
@@ -69,7 +85,7 @@ export default function LoginPage() {
                   <div className="flex items-center justify-between">
                     <Label htmlFor="password">Password</Label>
                     <Link
-                      href="/forgot-password"
+                      href="/auth/forgot-password"
                       className="text-sm text-teal-500 hover:text-teal-600 transition-colors"
                     >
                       Forgot password?
@@ -83,13 +99,21 @@ export default function LoginPage() {
                       placeholder="••••••••"
                       className="pl-10"
                       value={password}
-                      onChange={(e) => setPassword(e.target.value)}
+                      onChange={(e) => {
+                        setPassword(e.target.value)
+                        if (error) setError("")
+                      }}
                       required
                     />
                   </div>
                 </div>
               </CardContent>
               <CardFooter className="flex flex-col space-y-4">
+                {error && (
+                  <p className="text-sm text-red-500 dark:text-red-400 text-center mb-2">
+                    {error}
+                  </p>
+                )}
                 <AnimatedButton type="submit" className="w-full" disabled={isLoading}>
                   {isLoading ? "Logging in..." : "Login"}
                 </AnimatedButton>
