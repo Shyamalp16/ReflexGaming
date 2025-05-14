@@ -61,7 +61,6 @@ export default function UpdatePasswordPage() {
     const { data, error: updateUserError } = await supabase.auth.updateUser({ password: newPassword })
 
     setIsLoading(false)
-
     if (updateUserError) {
       setError(updateUserError.message)
     } else if (data.user) {
