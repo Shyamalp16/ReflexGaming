@@ -1,13 +1,17 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '@/context/AuthContext'; 
 import { updateUserProfile, UserProfile } from '@/lib/supabase/db'; 
 import { uploadProfileAvatar } from '@/lib/supabase/storage';
-import { zodResolver } from "@hookform/resolvers/zod";
-import { CalendarIcon, Loader2, UserCircle } from "lucide-react";
+import { CalendarIcon, Loader2, UserCircle, CropIcon, MinusIcon, PlusIcon, RotateCcwIcon } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import { z } from "zod";
-import { format } from "date-fns";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"; // Import query hooks
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+
+// Imports for cropping
+import Cropper, { Area } from 'react-easy-crop';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogClose } from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { Slider } from "@/components/ui/slider"; // For zoom control
+import getCroppedImg from '@/lib/imageUtils';
 
 interface CountryName {
   common: string;
@@ -53,6 +57,15 @@ const EditProfileForm: React.FC<EditProfileFormProps> = ({ userProfile: initialU
   const [avatarPreview, setAvatarPreview] = useState<string | null>(null); 
   const [avatarFile, setAvatarFile] = useState<File | null>(null);
 
+  // State for image cropping
+  const [imageToCropUri, setImageToCropUri] = useState<string | null>(null);
+  const [cropModalOpen, setCropModalOpen] = useState(false);
+  const [crop, setCrop] = useState<{ x: number; y: number }>({ x: 0, y: 0 });
+  const [zoom, setZoom] = useState(1);
+  const [rotation, setRotation] = useState(0); // Optional: for rotation control
+  const [croppedAreaPixels, setCroppedAreaPixels] = useState<Area | null>(null);
+  const [isCropping, setIsCropping] = useState(false);
+
   // Fetch countries using useQuery
   const { data: countries, isLoading: isCountriesLoading, error: countriesError } = useQuery< { code: string; name: string }[], Error >({
     queryKey: ['countriesList'],
@@ -85,6 +98,7 @@ const EditProfileForm: React.FC<EditProfileFormProps> = ({ userProfile: initialU
       if (initialUserProfile.date_of_birth) {
         setDateInputType('date');
       }
+      if (initialUserProfile.avatar_url) setAvatarPreview(initialUserProfile.avatar_url);
     }
   }, [initialUserProfile, parentIsLoadingProfile]);
 
@@ -107,23 +121,34 @@ const EditProfileForm: React.FC<EditProfileFormProps> = ({ userProfile: initialU
     },
     onSuccess: (data) => {
       // data from updateUserProfile is { data: updatedProfile, error }, so access data.data
-      const updatedProfile = data?.data;
-      if (updatedProfile) {
+      const updatedProfileResponse = data?.data;
+      if (updatedProfileResponse) {
          setFormData({ // Update local form state from the successful mutation response
-            firstName: updatedProfile.first_name || '',
-            lastName: updatedProfile.last_name || '',
-            username: updatedProfile.username || '',
-            dateOfBirth: updatedProfile.date_of_birth || '',
-            country: updatedProfile.country || '',
-            mobileNumber: updatedProfile.mobile_number || '',
-            bio: updatedProfile.bio || '',
-            avatarUrl: updatedProfile.avatar_url || '',
+            firstName: updatedProfileResponse.first_name || '',
+            lastName: updatedProfileResponse.last_name || '',
+            username: updatedProfileResponse.username || '',
+            dateOfBirth: updatedProfileResponse.date_of_birth || '',
+            country: updatedProfileResponse.country || '',
+            mobileNumber: updatedProfileResponse.mobile_number || '',
+            bio: updatedProfileResponse.bio || '',
+            avatarUrl: updatedProfileResponse.avatar_url || '',
         });
         setAvatarFile(null);
-        setAvatarPreview(null);
+        // setAvatarPreview(null); // Keep current avatarPreview which should be the new image (blob or final URL)
+
+        // Optimistically update the query cache for Navbar and other components
+        queryClient.setQueryData(['userProfile', user?.id], (oldData: UserProfile | null | undefined) => {
+          // If there's old data, merge with new, otherwise use new response directly
+          const baseData = oldData || {}; 
+          return {
+            ...baseData,
+            ...updatedProfileResponse, // Spread the full response to update all changed fields
+          };
+        });
       }
       toast({ title: "Success!", description: "Profile updated successfully!" });
-      queryClient.invalidateQueries({ queryKey: ['userProfile', user?.id] }); // Invalidate to refetch profile elsewhere
+      // Still invalidate to ensure data is refetched from the server for ultimate consistency
+      queryClient.invalidateQueries({ queryKey: ['userProfile', user?.id] }); 
     },
     onError: (error: Error) => {
       console.error("Failed to update profile:", error);
@@ -136,8 +161,11 @@ const EditProfileForm: React.FC<EditProfileFormProps> = ({ userProfile: initialU
       if (avatarPreview && avatarPreview.startsWith('blob:')) {
         URL.revokeObjectURL(avatarPreview);
       }
+      if (imageToCropUri) {
+        URL.revokeObjectURL(imageToCropUri);
+      }
     };
-  }, [avatarPreview]);
+  }, [avatarPreview, imageToCropUri]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
@@ -145,18 +173,64 @@ const EditProfileForm: React.FC<EditProfileFormProps> = ({ userProfile: initialU
   };
 
   const handleAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (avatarPreview && avatarPreview.startsWith('blob:')) {
-      URL.revokeObjectURL(avatarPreview); 
-    }
     if (e.target.files && e.target.files[0]) {
       const file = e.target.files[0];
-      setAvatarFile(file);
-      setAvatarPreview(URL.createObjectURL(file));
+      if (imageToCropUri) URL.revokeObjectURL(imageToCropUri); // Revoke previous if any
+      setImageToCropUri(URL.createObjectURL(file));
+      setCropModalOpen(true);
+      // Clear the input field value so the same file can be selected again if modal is cancelled
+      e.target.value = "";
     } else {
-      setAvatarFile(null);
-      setAvatarPreview(null);
+      // This case might not be hit if a file is always selected, but good for safety
+      if (imageToCropUri) URL.revokeObjectURL(imageToCropUri);
+      setImageToCropUri(null);
     }
   };
+
+  const onCropComplete = useCallback((_croppedArea: Area, currentCroppedAreaPixels: Area) => {
+    setCroppedAreaPixels(currentCroppedAreaPixels);
+  }, []);
+
+  const handleCropConfirm = async () => {
+    if (!imageToCropUri || !croppedAreaPixels) {
+      toast({ title: "Error", description: "Could not crop image. Please try again.", variant: "destructive" });
+      return;
+    }
+    setIsCropping(true);
+    try {
+      const croppedImageResult = await getCroppedImg(imageToCropUri, croppedAreaPixels, rotation);
+      if (croppedImageResult) {
+        if (avatarPreview && avatarPreview.startsWith('blob:')) {
+          URL.revokeObjectURL(avatarPreview); // Revoke old blob preview
+        }
+        setAvatarFile(croppedImageResult.file);
+        setAvatarPreview(croppedImageResult.url); // This is a new blob URL
+        setFormData(prev => ({ ...prev, avatarUrl: croppedImageResult.url })); // Update formData for immediate display if needed, though avatarPreview is primary for display
+      }
+    } catch (e: any) { // Use any for error type from catch
+      console.error("Cropping failed", e);
+      toast({ title: "Cropping Failed", description: e.message || "Could not process the image.", variant: "destructive" });
+    } finally {
+      setIsCropping(false);
+      setCropModalOpen(false);
+      if (imageToCropUri) URL.revokeObjectURL(imageToCropUri); // Clean up the source image URI
+      setImageToCropUri(null);
+      setZoom(1); // Reset zoom and crop for next time
+      setCrop({x:0, y:0});
+      setRotation(0);
+    }
+  };
+
+  const handleModalClose = (isOpen: boolean) => {
+    if (!isOpen && imageToCropUri && !isCropping) { // If modal is closed without confirming crop
+        URL.revokeObjectURL(imageToCropUri);
+        setImageToCropUri(null);
+        setZoom(1);
+        setCrop({x:0, y:0});
+        setRotation(0);
+    }
+    setCropModalOpen(isOpen);
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -187,7 +261,8 @@ const EditProfileForm: React.FC<EditProfileFormProps> = ({ userProfile: initialU
     profileUpdateMutation.mutate(updates);
   };
 
-  const displayAvatarSrc = avatarPreview || formData.avatarUrl;
+  // Display avatar source prioritizes new blob preview, then existing (potentially uploaded) avatarUrl
+  const displayAvatarSrc = avatarPreview || formData.avatarUrl || initialUserProfile?.avatar_url;
 
   if (parentIsLoadingProfile) { // Show loading if parent is loading the profile
     return (
@@ -202,6 +277,58 @@ const EditProfileForm: React.FC<EditProfileFormProps> = ({ userProfile: initialU
   return (
     <div className="p-6 space-y-6 rounded-lg bg-card shadow-sm">
       <h2 className="text-2xl font-semibold mb-6 text-center">Edit Profile</h2>
+      {/* Cropping Modal */}
+      {imageToCropUri && (
+        <Dialog open={cropModalOpen} onOpenChange={handleModalClose}>
+          <DialogContent className="max-w-xs sm:max-w-sm md:max-w-md lg:max-w-lg p-0">
+            <DialogHeader className="p-6 pb-0">
+              <DialogTitle>Crop Your Avatar</DialogTitle>
+            </DialogHeader>
+            <div className="relative h-[125px] sm:h-[150px] md:h-[175px] bg-muted/50 overflow-hidden">
+              <Cropper
+                image={imageToCropUri}
+                crop={crop}
+                zoom={zoom}
+                rotation={rotation}
+                aspect={1} // For square/circular crop
+                cropShape="round" // For circular crop shape hint
+                onCropChange={setCrop}
+                onZoomChange={setZoom}
+                onRotationChange={setRotation} // If rotation control is added
+                onCropComplete={onCropComplete}
+                showGrid={false}
+              />
+            </div>
+            <div className="p-6 space-y-4">
+              <div className="space-y-2">
+                <label htmlFor="zoom" className="text-sm font-medium">Zoom</label>
+                <div className="flex items-center space-x-2">
+                  <Button variant="outline" size="icon" onClick={() => setZoom(Math.max(1, zoom - 0.1))} disabled={zoom <= 1}><MinusIcon className="h-4 w-4"/></Button>
+                  <Slider id="zoom" min={1} max={3} step={0.01} value={[zoom]} onValueChange={(val) => setZoom(val[0])} />
+                  <Button variant="outline" size="icon" onClick={() => setZoom(Math.min(3, zoom + 0.1))} disabled={zoom >= 3}><PlusIcon className="h-4 w-4"/></Button>
+                </div>
+              </div>
+              <div className="space-y-2">
+                 <label htmlFor="rotation" className="text-sm font-medium">Rotate</label>
+                 <div className="flex items-center space-x-2">
+                   <Button variant="outline" size="icon" onClick={() => setRotation(rotation - 90)}><RotateCcwIcon className="h-4 w-4 transform scale-x-[-1]"/></Button>
+                   <Slider id="rotation" min={0} max={360} step={1} value={[rotation]} onValueChange={(val) => setRotation(val[0])} />
+                   <Button variant="outline" size="icon" onClick={() => setRotation(rotation + 90)}><RotateCcwIcon className="h-4 w-4"/></Button>
+                 </div>
+              </div>
+            </div>
+            <DialogFooter className="p-6 pt-0">
+              <DialogClose asChild>
+                <Button variant="outline">Cancel</Button>
+              </DialogClose>
+              <Button onClick={handleCropConfirm} disabled={isCropping}>
+                {isCropping ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Cropping...</> : "Confirm Crop"}
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+      )}
+
       <form onSubmit={handleSubmit} className="space-y-8">
         <div className="p-4 border border-border rounded-md space-y-4">
           <h3 className="text-lg font-medium leading-6 text-foreground">Personal Information</h3>
@@ -300,6 +427,7 @@ const EditProfileForm: React.FC<EditProfileFormProps> = ({ userProfile: initialU
                   onChange={handleAvatarChange} 
                   className="block w-full md:w-4/5 text-sm text-muted-foreground file:mr-2 file:py-1.5 file:px-3 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-primary/10 file:text-primary hover:file:bg-primary/20 focus:outline-none"
                 />
+                 <p className="mt-1 text-xs text-muted-foreground">Select an image to crop and set as your avatar.</p>
               </div>
             </div>
             <div className="flex flex-col items-center md:items-start md:pl-2">
@@ -308,7 +436,7 @@ const EditProfileForm: React.FC<EditProfileFormProps> = ({ userProfile: initialU
                 <img src={displayAvatarSrc} alt="Avatar Preview" className="h-24 w-24 md:h-28 md:w-28 rounded-full object-cover border border-border shadow-sm" />
               ) : (
                 <div className="h-24 w-24 md:h-28 md:w-28 rounded-full bg-muted border border-border flex items-center justify-center text-muted-foreground text-xs shadow-sm">
-                  No Image
+                  <UserCircle className="w-12 h-12 text-muted-foreground/50" />
                 </div>
               )}
             </div>
@@ -321,7 +449,7 @@ const EditProfileForm: React.FC<EditProfileFormProps> = ({ userProfile: initialU
             className="inline-flex justify-center rounded-md border border-transparent bg-primary px-4 py-2 text-sm font-medium text-primary-foreground shadow-sm hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 disabled:opacity-50"
             disabled={parentIsLoadingProfile || isCountriesLoading || profileUpdateMutation.isPending}
           >
-            {profileUpdateMutation.isPending ? 'Saving...' : (parentIsLoadingProfile || isCountriesLoading ? 'Loading Data...' : 'Save Changes')}
+            {profileUpdateMutation.isPending ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Saving...</> : (parentIsLoadingProfile || isCountriesLoading ? 'Loading Data...' : 'Save Changes')}
           </button>
         </div>
       </form>
