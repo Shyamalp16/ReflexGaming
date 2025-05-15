@@ -15,16 +15,55 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { useRouter, usePathname } from "next/navigation"
+import { useEffect, useState } from "react"
+import { getUserProfile } from "@/lib/supabase/db"
 
 export function Navbar() {
   const { user, isLoading, signOut } = useAuth()
   const router = useRouter()
   const pathname = usePathname()
 
+  const [profileAvatarUrl, setProfileAvatarUrl] = useState<string | null>(null)
+  const [profileUsername, setProfileUsername] = useState<string | null>(null)
+  const [isProfileLoading, setIsProfileLoading] = useState(false)
+
+  useEffect(() => {
+    const fetchProfile = async () => {
+      if (user?.id) {
+        setIsProfileLoading(true)
+        try {
+          const profile = await getUserProfile(user.id)
+          if (profile) {
+            setProfileAvatarUrl(profile.avatar_url || null)
+            setProfileUsername(profile.username || user.email?.split('@')[0] || "User")
+          } else {
+            // No profile found, use defaults
+            setProfileUsername(user.email?.split('@')[0] || "User")
+          }
+        } catch (error) {
+          console.error("Error fetching profile for navbar:", error)
+          setProfileUsername(user.email?.split('@')[0] || "User") // Fallback on error
+        } finally {
+          setIsProfileLoading(false)
+        }
+      }
+    }
+
+    if (!isLoading && user) {
+      fetchProfile()
+    }
+  }, [user, isLoading])
+
   const handleLogout = async () => {
     await signOut()
     router.push("/")
+  }
+  
+  const getAvatarFallback = () => {
+    if (isProfileLoading) return "...";
+    return (profileUsername || "U").charAt(0).toUpperCase();
   }
 
   return (
@@ -99,14 +138,21 @@ export function Navbar() {
         ) : user ? (
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="icon" className="rounded-full">
-                <UserCircle className="h-7 w-7" />
+              <Button variant="ghost" className="flex items-center gap-2 rounded-full px-2 py-1 h-auto">
+                <Avatar className="h-7 w-7">
+                  <AvatarImage src={profileAvatarUrl || undefined} alt={profileUsername || "User Avatar"} />
+                  <AvatarFallback>{getAvatarFallback()}</AvatarFallback>
+                </Avatar>
+                {!isProfileLoading && profileUsername && (
+                   <span className="text-sm font-medium hidden sm:inline-block">{profileUsername}</span>
+                )}
+                 {isProfileLoading && <span className="text-sm font-medium hidden sm:inline-block">Loading...</span>}
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-56">
               <DropdownMenuLabel>
                 <div className="flex flex-col space-y-1">
-                  <p className="text-sm font-medium leading-none">My Account</p>
+                  <p className="text-sm font-medium leading-none">{profileUsername || "My Account"}</p>
                   {user.email && <p className="text-xs leading-none text-muted-foreground">{user.email}</p>}
                 </div>
               </DropdownMenuLabel>
