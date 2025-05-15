@@ -46,7 +46,7 @@ export default function WalletPage() {
         >
           <WalletCards className="h-16 w-16 text-primary mx-auto mb-4" />
           <h1 className="text-4xl font-bold gradient-text">
-            Wallet Balance
+            Wallet
           </h1>
           <p className="text-muted-foreground max-w-md mx-auto">
             Manage your funds, view transaction history, and add credits to your account.

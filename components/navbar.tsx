@@ -1,7 +1,7 @@
 "use client"
 
 import Link from "next/link"
-import { Zap, Menu, UserCircle, LogOut, User as UserIcon } from "lucide-react"
+import { Zap, Menu, UserCircle, LogOut, User as UserIcon, Settings } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { ThemeToggle } from "@/components/theme-toggle"
 import { AnimatedButton } from "@/components/animated-button"
@@ -15,11 +15,12 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import { useRouter } from "next/navigation"
+import { useRouter, usePathname } from "next/navigation"
 
 export function Navbar() {
   const { user, isLoading, signOut } = useAuth()
   const router = useRouter()
+  const pathname = usePathname()
 
   const handleLogout = async () => {
     await signOut()
@@ -44,21 +45,21 @@ export function Navbar() {
           <>
             <Link
               href="/dashboard"
-              className="text-sm font-medium text-foreground hover:text-teal-500 transition-colors"
+              className={`text-sm font-medium transition-colors ${pathname === '/dashboard' ? 'text-primary' : 'text-muted-foreground hover:text-teal-500'}`}
             >
               Dashboard
             </Link>
             <Link
               href="/my-sessions"
-              className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors hover:text-teal-500"
+              className={`text-sm font-medium transition-colors ${pathname === '/my-sessions' ? 'text-primary' : 'text-muted-foreground hover:text-foreground hover:text-teal-500'}`}
             >
               My Sessions
             </Link>
             <Link
               href="/wallet"
-              className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors hover:text-teal-500"
+              className={`text-sm font-medium transition-colors ${pathname === '/wallet' ? 'text-primary' : 'text-muted-foreground hover:text-foreground hover:text-teal-500'}`}
             >
-              Wallet Balance
+              Wallet
             </Link>
           </>
         ) : (
@@ -114,6 +115,12 @@ export function Navbar() {
                 <Link href="/profile">
                   <UserIcon className="mr-2 h-4 w-4" />
                   <span>Profile</span>
+                </Link>
+              </DropdownMenuItem>
+              <DropdownMenuItem asChild>
+                <Link href="/settings">
+                  <Settings className="mr-2 h-4 w-4" />
+                  <span>Settings</span>
                 </Link>
               </DropdownMenuItem>
               <DropdownMenuItem onClick={handleLogout}>
