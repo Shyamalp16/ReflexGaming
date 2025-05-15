@@ -7,8 +7,35 @@ import { MailCheck } from "lucide-react" // Using a more appropriate icon
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { AnimatedButton } from "@/components/animated-button"
 import { Navbar } from "@/components/navbar"
+import { useAuth } from "@/context/AuthContext" // Added
+import { useRouter } from "next/navigation" // Added
+import { useEffect } from "react" // Added
 
 export default function VerifyEmailPage() {
+  const { user, isLoading, session } = useAuth() // Using session as an indicator of successful auth flow completion
+  const router = useRouter()
+
+  useEffect(() => {
+    // If auth is not loading and we have an active session (user might be verified or just logged in)
+    // Supabase often establishes a session after the email verification link is clicked.
+    if (!isLoading && session) { 
+      // Check if user object and email_confirmed_at are available to be more precise
+      // For now, assuming a session post-verification means redirect to dashboard.
+      router.push("/dashboard")
+    }
+    // If no session, user stays on this page to see the "check your email" message.
+  }, [user, isLoading, session, router])
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-background text-foreground flex flex-col items-center justify-center">
+        <Navbar />
+        <p className="mt-8">Loading...</p>
+      </div>
+    );
+  }
+
+  // If a session is active, this component will quickly redirect, so this content might flash briefly or not show.
   return (
     <div className="min-h-screen bg-background text-foreground bg-dark-radial flex flex-col">
       {/* Header */}
