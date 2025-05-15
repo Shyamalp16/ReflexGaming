@@ -46,16 +46,11 @@ export default function LoginPage() {
     }
 
     if(data.user){
-      // Successful login is handled by AuthContext which will update session 
-      // and the useEffect above will trigger the redirect.
-      // No explicit router.push("/dashboard") needed here anymore if AuthContext is robust.
-      // However, keeping it can be a fallback if context update is slow.
       router.push("/dashboard") 
     }
   }
 
   if (authIsLoading || (!authIsLoading && session)) {
-    // Show loading indicator or null while checking auth state or redirecting
     return (
       <div className="min-h-screen bg-background text-foreground flex flex-col items-center justify-center">
         <Navbar />
@@ -64,7 +59,6 @@ export default function LoginPage() {
     );
   }
 
-  // If not loading and no session, show the login form
   return (
     <div className="min-h-screen bg-background text-foreground bg-dark-radial flex flex-col">
       {/* Header */}

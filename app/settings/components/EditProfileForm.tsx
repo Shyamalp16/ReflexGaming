@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '@/context/AuthContext'; 
 import { getUserProfile, updateUserProfile, UserProfile } from '@/lib/supabase/db'; 
-import { uploadProfileAvatar } from '@/lib/supabase/storage'; // Added for avatar uploads
+import { uploadProfileAvatar } from '@/lib/supabase/storage';
 import { zodResolver } from "@hookform/resolvers/zod";
 import { CalendarIcon, Loader2, UserCircle } from "lucide-react";
-import { useToast } from "@/hooks/use-toast"; // Corrected import path
+import { useToast } from "@/hooks/use-toast";
 import { z } from "zod";
 import { format } from "date-fns";
 
@@ -18,12 +18,11 @@ interface RestCountryNameOnly {
 }
 
 interface EditProfileFormProps {
-  // Add props if needed, e.g., initial data
 }
 
 const EditProfileForm: React.FC<EditProfileFormProps> = () => {
   const { user } = useAuth(); 
-  const { toast } = useToast(); // Initialize toast function
+  const { toast } = useToast(); 
   const [formData, setFormData] = useState({
     firstName: '',
     lastName: '',
@@ -36,11 +35,11 @@ const EditProfileForm: React.FC<EditProfileFormProps> = () => {
   });
   const [dateInputType, setDateInputType] = useState<'text' | 'date'>('text');
   const [avatarPreview, setAvatarPreview] = useState<string | null>(null); 
-  const [avatarFile, setAvatarFile] = useState<File | null>(null); // State for the actual avatar file
+  const [avatarFile, setAvatarFile] = useState<File | null>(null);
   const [countries, setCountries] = useState<{ code: string; name: string }[]>([]);
   const [isCountriesLoading, setIsCountriesLoading] = useState(true);
   const [isProfileLoading, setIsProfileLoading] = useState(true); 
-  const [isSubmitting, setIsSubmitting] = useState(false); // State for submission loading
+  const [isSubmitting, setIsSubmitting] = useState(false); 
 
   useEffect(() => {
     const loadUserProfile = async () => {
@@ -117,7 +116,7 @@ const EditProfileForm: React.FC<EditProfileFormProps> = () => {
     }
     if (e.target.files && e.target.files[0]) {
       const file = e.target.files[0];
-      setAvatarFile(file); // Store the file object
+      setAvatarFile(file);
       setAvatarPreview(URL.createObjectURL(file));
     } else {
       setAvatarFile(null);
@@ -133,7 +132,7 @@ const EditProfileForm: React.FC<EditProfileFormProps> = () => {
     }
     setIsSubmitting(true);
 
-    let newAvatarUrl = formData.avatarUrl; // Keep existing if no new upload
+    let newAvatarUrl = formData.avatarUrl;
 
     try {
       if (avatarFile) {
@@ -149,7 +148,7 @@ const EditProfileForm: React.FC<EditProfileFormProps> = () => {
         first_name: formData.firstName,
         last_name: formData.lastName,
         username: formData.username,
-        date_of_birth: formData.dateOfBirth || null, // Ensure empty string becomes null
+        date_of_birth: formData.dateOfBirth || null,
         country: formData.country,
         mobile_number: formData.mobileNumber || null,
         bio: formData.bio || null,
@@ -180,8 +179,8 @@ const EditProfileForm: React.FC<EditProfileFormProps> = () => {
             bio: updatedProfile.bio || '',
             avatarUrl: updatedProfile.avatar_url || '',
         });
-        setAvatarFile(null); // Clear the selected file
-        setAvatarPreview(null); // Clear the preview for the uploaded file
+        setAvatarFile(null);
+        setAvatarPreview(null); 
         toast({ title: "Success!", description: "Profile updated successfully!" });
       }
 

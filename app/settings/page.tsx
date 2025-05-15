@@ -5,13 +5,18 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
+import { getUserProfile } from '@/lib/supabase/db';
+import { useToast } from '@/hooks/use-toast';
 import { Navbar } from '@/components/navbar';
 import EditProfileForm from './components/EditProfileForm';
 import SecuritySettings from './components/SecuritySettings';
+import DeleteAccountModal from './components/DeleteAccountModal';
+import { Button } from '@/components/ui/button';
 import {
   LayoutDashboard, UserCog, Swords, ShieldHalf, MessageSquare, CircleUserRound, Settings2, ShieldCheck, Gamepad2, DollarSign, HelpCircle, FileText, Info,
-  Trophy, Users
+  Trophy, Users, AlertTriangle
 } from 'lucide-react';
+import { supabase } from '@/lib/supabase/client';
 
 // Define types for sidebar views
 type ActiveView = 
@@ -25,13 +30,13 @@ interface SidebarLinkConfig {
   id: ActiveView;
   label: string;
   icon: React.ReactNode;
-  href?: string; // Optional
-  isExternal?: boolean; // Optional
+  href?: string; 
+  isExternal?: boolean;
 }
 
 interface SidebarSectionConfig {
   title: string | null;
-  icon?: React.ReactNode; // Optional for section title
+  icon?: React.ReactNode; 
   links: SidebarLinkConfig[];
 }
 
@@ -69,7 +74,11 @@ const SidebarLink: React.FC<SidebarLinkProps> = ({ href, id, label, icon, isActi
 export default function SettingsPage() {
   const { user, isLoading, session } = useAuth();
   const router = useRouter();
+  const { toast } = useToast();
   const [activeView, setActiveView] = useState<ActiveView>('manageAccount_editProfile');
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [currentUserUsername, setCurrentUserUsername] = useState<string | null>(null);
+  const [isUsernameLoading, setIsUsernameLoading] = useState(true);
 
   useEffect(() => {
     if (!isLoading && !user && !session) {
@@ -77,10 +86,37 @@ export default function SettingsPage() {
     }
   }, [user, isLoading, session, router]);
 
-  if (isLoading) {
+  useEffect(() => {
+    const fetchUsername = async () => {
+      if (user?.id) {
+        setIsUsernameLoading(true);
+        try {
+          const profile = await getUserProfile(user.id);
+          if (profile && profile.username) {
+            setCurrentUserUsername(profile.username);
+          } else {
+            setCurrentUserUsername(user.email?.split('@')[0] || "user"); 
+            console.warn("Username not found in profile, using email prefix as fallback.");
+          }
+        } catch (error) {
+          console.error("Error fetching user profile for username:", error);
+          setCurrentUserUsername(user.email?.split('@')[0] || "user");
+          toast({ title: "Error", description: "Could not fetch username for account deletion.", variant: "destructive" });
+        } finally {
+          setIsUsernameLoading(false);
+        }
+      } else if (!isLoading) {
+        setIsUsernameLoading(false);
+      }
+    };
+    fetchUsername();
+  }, [user, isLoading, toast]);
+
+  if (isLoading || (user && isUsernameLoading)) {
     return (
       <div className="min-h-screen bg-background text-foreground flex flex-col items-center justify-center">
-        <p>Loading settings...</p>
+        <Navbar />
+        <p className="mt-8">Loading settings...</p>
       </div>
     );
   }
@@ -88,10 +124,44 @@ export default function SettingsPage() {
   if (!user) {
     return (
         <div className="min-h-screen bg-background text-foreground flex flex-col items-center justify-center">
-            <p>Redirecting to login...</p>
+            <Navbar />
+            <p className="mt-8">Redirecting to login...</p>
         </div>
     );
   }
+
+  const handleOpenDeleteModal = () => {
+    if (currentUserUsername) {
+      setIsDeleteModalOpen(true);
+    } else {
+      toast({ title: "Error", description: "Cannot initiate account deletion without username.", variant: "destructive"});
+    }
+  };
+
+  const handleActualAccountDeletion = async () => {
+    toast({ title: "Account Deletion Confirmed", description: "Processing account deletion...", variant: "default" });
+    setIsDeleteModalOpen(false);
+
+    try {
+      const { error } = await supabase.auth.signOut();
+      if (error) {
+        console.error("Error signing out after account deletion:", error);
+        toast({ title: "Logout Error", description: "Could not sign you out automatically. Please try logging out manually.", variant: "destructive" });
+        window.location.href = '/'; 
+      } else {
+        toast({ title: "Logged Out", description: "You have been logged out. Redirecting to homepage..." });
+        setTimeout(() => {
+          window.location.href = '/'; 
+        }, 1500);
+      }
+    } catch (e) {
+      console.error("Client-side error after account deletion attempt:", e);
+      toast({ title: "Error", description: "An unexpected error occurred. Redirecting to homepage...", variant: "destructive" });
+      setTimeout(() => {
+        window.location.href = '/';
+      }, 1500);
+    }
+  };
 
   const renderContent = () => {
     if (activeView === 'manageAccount_editProfile') {
@@ -100,8 +170,6 @@ export default function SettingsPage() {
     if (activeView === 'manageAccount_changePassword') {
       return <SecuritySettings />;
     }
-    // Generic placeholder for other views
-    // Ensure the activeView string formatting is consistent if you add more views
     const viewTitle = activeView.replace(/_/g, ' ').replace(/([A-Z])/g, ' $1').trim();
     return (
         <div className="p-6">
@@ -144,35 +212,55 @@ export default function SettingsPage() {
     <div className="min-h-screen bg-background text-foreground flex flex-col">
       <Navbar />
       <div className="flex-1 flex container mx-auto py-8 px-4 gap-8">
-        {/* Sidebar */}
-        <aside className="w-64 lg:w-72 flex-shrink-0 space-y-4 sticky top-24 self-start pr-4">
-          {sidebarSections.map((section, sectionIndex) => (
-            <div key={section.title || sectionIndex} className="space-y-1">
-              {section.title && (
-                <h3 className="px-3 text-xs font-semibold uppercase text-muted-foreground tracking-wider flex items-center">
-                  {section.icon && <span className="mr-2">{section.icon}</span>}
-                  {section.title}
-                </h3>
-              )}
-              <div className={section.title ? "mt-2 space-y-1" : "space-y-1"}>
-                {section.links.map(link => (
-                  <SidebarLink 
-                    key={link.id}
-                    {...link}
-                    isActive={activeView === link.id}
-                    onClick={() => !link.isExternal && setActiveView(link.id)}
-                  />
-                ))}
+        <aside className="w-64 lg:w-72 flex-shrink-0 flex flex-col justify-between sticky top-24 self-start pr-4 h-[calc(100vh-theme(space.24)-theme(space.16))]">
+          <div>
+            {sidebarSections.map((section, sectionIndex) => (
+              <div key={section.title || sectionIndex} className="space-y-1 mb-4">
+                {section.title && (
+                  <h3 className="px-3 text-xs font-semibold uppercase text-muted-foreground tracking-wider flex items-center">
+                    {section.icon && <span className="mr-2">{section.icon}</span>}
+                    {section.title}
+                  </h3>
+                )}
+                <div className={section.title ? "mt-2 space-y-1" : "space-y-1"}>
+                  {section.links.map(link => (
+                    <SidebarLink 
+                      key={link.id}
+                      {...link}
+                      isActive={activeView === link.id}
+                      onClick={() => !link.isExternal && setActiveView(link.id)}
+                    />
+                  ))}
+                </div>
               </div>
-            </div>
-          ))}
+            ))}
+          </div>
+
+          <div className="mt-auto pt-4 border-t border-border flex justify-center">
+            <Button 
+              variant="destructive" 
+              className="justify-start text-left"
+              onClick={handleOpenDeleteModal}
+              disabled={isUsernameLoading || !currentUserUsername}
+            >
+              <AlertTriangle className="h-5 w-5 mr-2" />
+              Delete Account
+            </Button>
+          </div>
         </aside>
 
-        {/* Main Content Area */}
         <main className="flex-1 bg-card border border-border rounded-lg shadow-sm overflow-y-auto">
           {renderContent()}
         </main>
       </div>
+      
+      <DeleteAccountModal
+        isOpen={isDeleteModalOpen}
+        onClose={() => setIsDeleteModalOpen(false)}
+        onConfirmDelete={handleActualAccountDeletion}
+        usernameToConfirm={currentUserUsername}
+        uid={user?.id}
+      />
     </div>
   );
 } 

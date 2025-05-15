@@ -44,7 +44,6 @@ export default function SecuritySettings() {
     
     console.log("Change Password Submitted", { currentPassword, newPassword });
     alert("Password change submitted (no backend)"); 
-    // Consider closing the dialog programmatically here
   };
 
   const handleChangeEmail = (e: React.FormEvent) => {
@@ -60,7 +59,6 @@ export default function SecuritySettings() {
     }
     console.log("Change Email Submitted", { newEmail });
     alert("Email change submitted (no backend)");
-    // Consider closing the dialog programmatically here
   };
   
   const handleEnable2FA = () => {
