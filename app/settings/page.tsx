@@ -5,7 +5,7 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
-import { getUserProfile } from '@/lib/supabase/db';
+import { getUserProfile, UserProfile } from '@/lib/supabase/db';
 import { useToast } from '@/hooks/use-toast';
 import { Navbar } from '@/components/navbar';
 import EditProfileForm from './components/EditProfileForm';
@@ -17,6 +17,7 @@ import {
   Trophy, Users, AlertTriangle
 } from 'lucide-react';
 import { supabase } from '@/lib/supabase/client';
+import { useQuery, QueryKey } from '@tanstack/react-query';
 
 // Define types for sidebar views
 type ActiveView = 
@@ -72,47 +73,52 @@ const SidebarLink: React.FC<SidebarLinkProps> = ({ href, id, label, icon, isActi
 };
 
 export default function SettingsPage() {
-  const { user, isLoading, session } = useAuth();
+  const { user, isLoading: authIsLoading, session } = useAuth();
   const router = useRouter();
   const { toast } = useToast();
   const [activeView, setActiveView] = useState<ActiveView>('manageAccount_editProfile');
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
-  const [currentUserUsername, setCurrentUserUsername] = useState<string | null>(null);
-  const [isUsernameLoading, setIsUsernameLoading] = useState(true);
+
+  const queryKey: QueryKey = ['userProfile', user?.id];
+
+  const { 
+    data: currentUserProfile, 
+    isLoading: isProfileLoading, 
+    error: profileError 
+  } = useQuery<UserProfile | null, Error, UserProfile | null, QueryKey>({
+    queryKey: queryKey,
+    queryFn: async () => {
+      if (!user?.id) return null;
+      return getUserProfile(user.id);
+    },
+    enabled: !!user?.id && !authIsLoading,
+  });
 
   useEffect(() => {
-    if (!isLoading && !user && !session) {
+    if (!authIsLoading && !user && !session) {
       router.push('/login');
     }
-  }, [user, isLoading, session, router]);
+  }, [user, authIsLoading, session, router]);
 
   useEffect(() => {
-    const fetchUsername = async () => {
-      if (user?.id) {
-        setIsUsernameLoading(true);
-        try {
-          const profile = await getUserProfile(user.id);
-          if (profile && profile.username) {
-            setCurrentUserUsername(profile.username);
-          } else {
-            setCurrentUserUsername(user.email?.split('@')[0] || "user"); 
-            console.warn("Username not found in profile, using email prefix as fallback.");
-          }
-        } catch (error) {
-          console.error("Error fetching user profile for username:", error);
-          setCurrentUserUsername(user.email?.split('@')[0] || "user");
-          toast({ title: "Error", description: "Could not fetch username for account deletion.", variant: "destructive" });
-        } finally {
-          setIsUsernameLoading(false);
-        }
-      } else if (!isLoading) {
-        setIsUsernameLoading(false);
-      }
-    };
-    fetchUsername();
-  }, [user, isLoading, toast]);
+    if (profileError) {
+      console.error("Error fetching user profile for settings page (from useEffect):", profileError);
+      toast({ 
+        title: "Error Fetching Profile", 
+        description: profileError.message || "Could not fetch your profile data. Please try refreshing the page.", 
+        variant: "destructive" 
+      });
+    }
+    // If getUserProfile returns null when profile is not found, and useQuery's data becomes null.
+    // We need to check if user exists but profile data is null (after loading is finished).
+    if (!isProfileLoading && user && !currentUserProfile && !profileError) {
+        // This handles the case where getUserProfile resolves to null (e.g., profile doesn't exist in DB yet)
+        // It's important not to show this if there was a fetch error, which is handled by `profileError`
+         toast({ title: "Profile Data Missing", description: "Your profile data could not be loaded. You might need to complete your profile.", variant: "default" });
+    }
+  }, [profileError, currentUserProfile, isProfileLoading, user, toast]);
 
-  if (isLoading || (user && isUsernameLoading)) {
+  if (authIsLoading || (!!user && isProfileLoading)) {
     return (
       <div className="min-h-screen bg-background text-foreground flex flex-col items-center justify-center">
         <Navbar />
@@ -131,17 +137,16 @@ export default function SettingsPage() {
   }
 
   const handleOpenDeleteModal = () => {
-    if (currentUserUsername) {
+    if (currentUserProfile && currentUserProfile.username) {
       setIsDeleteModalOpen(true);
     } else {
-      toast({ title: "Error", description: "Cannot initiate account deletion without username.", variant: "destructive"});
+      toast({ title: "Unable to Delete Account", description: "Your username is not available. Please ensure your profile is fully loaded and has a username.", variant: "destructive"});
     }
   };
 
   const handleActualAccountDeletion = async () => {
     toast({ title: "Account Deletion Confirmed", description: "Processing account deletion...", variant: "default" });
     setIsDeleteModalOpen(false);
-
     try {
       const { error } = await supabase.auth.signOut();
       if (error) {
@@ -165,7 +170,10 @@ export default function SettingsPage() {
 
   const renderContent = () => {
     if (activeView === 'manageAccount_editProfile') {
-      return <EditProfileForm />;
+      return <EditProfileForm 
+                userProfile={currentUserProfile ?? null}
+                isLoadingProfile={isProfileLoading}
+             />;
     }
     if (activeView === 'manageAccount_changePassword') {
       return <SecuritySettings />;
@@ -241,7 +249,7 @@ export default function SettingsPage() {
               variant="destructive" 
               className="justify-start text-left"
               onClick={handleOpenDeleteModal}
-              disabled={isUsernameLoading || !currentUserUsername}
+              disabled={authIsLoading || isProfileLoading || !currentUserProfile || !currentUserProfile.username}
             >
               <AlertTriangle className="h-5 w-5 mr-2" />
               Delete Account
@@ -258,7 +266,7 @@ export default function SettingsPage() {
         isOpen={isDeleteModalOpen}
         onClose={() => setIsDeleteModalOpen(false)}
         onConfirmDelete={handleActualAccountDeletion}
-        usernameToConfirm={currentUserUsername}
+        usernameToConfirm={currentUserProfile?.username || null}
         uid={user?.id}
       />
     </div>

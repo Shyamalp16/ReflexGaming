@@ -1,12 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '@/context/AuthContext'; 
-import { getUserProfile, updateUserProfile, UserProfile } from '@/lib/supabase/db'; 
+import { updateUserProfile, UserProfile } from '@/lib/supabase/db'; 
 import { uploadProfileAvatar } from '@/lib/supabase/storage';
 import { zodResolver } from "@hookform/resolvers/zod";
 import { CalendarIcon, Loader2, UserCircle } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { z } from "zod";
 import { format } from "date-fns";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"; // Import query hooks
 
 interface CountryName {
   common: string;
@@ -17,12 +18,27 @@ interface RestCountryNameOnly {
   name: CountryName;
 }
 
+// Fetcher function for countries
+const fetchCountriesList = async (): Promise<{ code: string; name: string }[]> => {
+  const response = await fetch('https://restcountries.com/v3.1/all?fields=name');
+  if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+  const result: RestCountryNameOnly[] = await response.json();
+  return result.map(country => ({
+    code: country.name.common, 
+    name: country.name.common
+  })).sort((a, b) => a.name.localeCompare(b.name));
+};
+
 interface EditProfileFormProps {
+  userProfile: UserProfile | null;      // Prop for pre-fetched profile from parent (SettingsPage)
+  isLoadingProfile: boolean;         // Prop for loading state from parent
 }
 
-const EditProfileForm: React.FC<EditProfileFormProps> = () => {
+const EditProfileForm: React.FC<EditProfileFormProps> = ({ userProfile: initialUserProfile, isLoadingProfile: parentIsLoadingProfile }) => {
   const { user } = useAuth(); 
-  const { toast } = useToast(); 
+  const { toast } = useToast();
+  const queryClient = useQueryClient(); // For cache invalidation
+
   const [formData, setFormData] = useState({
     firstName: '',
     lastName: '',
@@ -36,66 +52,84 @@ const EditProfileForm: React.FC<EditProfileFormProps> = () => {
   const [dateInputType, setDateInputType] = useState<'text' | 'date'>('text');
   const [avatarPreview, setAvatarPreview] = useState<string | null>(null); 
   const [avatarFile, setAvatarFile] = useState<File | null>(null);
-  const [countries, setCountries] = useState<{ code: string; name: string }[]>([]);
-  const [isCountriesLoading, setIsCountriesLoading] = useState(true);
-  const [isProfileLoading, setIsProfileLoading] = useState(true); 
-  const [isSubmitting, setIsSubmitting] = useState(false); 
 
+  // Fetch countries using useQuery
+  const { data: countries, isLoading: isCountriesLoading, error: countriesError } = useQuery< { code: string; name: string }[], Error >({
+    queryKey: ['countriesList'],
+    queryFn: fetchCountriesList,
+    staleTime: Infinity, // Countries list is very static, keep it fresh indefinitely
+    gcTime: Infinity,    // Keep in cache indefinitely
+  });
+
+  // Handle countries fetch error
   useEffect(() => {
-    const loadUserProfile = async () => {
-      if (user?.id) {
-        setIsProfileLoading(true);
-        try {
-          const profileData = await getUserProfile(user.id);
-          if (profileData) {
-            setFormData({
-              firstName: profileData.first_name || '',
-              lastName: profileData.last_name || '',
-              username: profileData.username || '',
-              dateOfBirth: profileData.date_of_birth || '',
-              country: profileData.country || '',
-              mobileNumber: profileData.mobile_number || '',
-              bio: profileData.bio || '',
-              avatarUrl: profileData.avatar_url || '',
-            });
-            if (profileData.date_of_birth) {
-              setDateInputType('date');
-            }
-          }
-        } catch (error) {
-          console.error("Failed to load user profile:", error);
-          toast({ title: "Error", description: "Failed to load profile.", variant: "destructive" });
-        } finally {
-          setIsProfileLoading(false);
+    if (countriesError) {
+      console.error("Failed to fetch countries:", countriesError);
+      toast({ title: "Error", description: "Failed to load countries list. " + countriesError.message, variant: "destructive" });
+    }
+  }, [countriesError, toast]);
+
+  // Populate form data when initialUserProfile (from props) is available or changes
+  useEffect(() => {
+    if (!parentIsLoadingProfile && initialUserProfile) {
+      setFormData({
+        firstName: initialUserProfile.first_name || '',
+        lastName: initialUserProfile.last_name || '',
+        username: initialUserProfile.username || '',
+        dateOfBirth: initialUserProfile.date_of_birth || '',
+        country: initialUserProfile.country || '',
+        mobileNumber: initialUserProfile.mobile_number || '',
+        bio: initialUserProfile.bio || '',
+        avatarUrl: initialUserProfile.avatar_url || '',
+      });
+      if (initialUserProfile.date_of_birth) {
+        setDateInputType('date');
+      }
+    }
+  }, [initialUserProfile, parentIsLoadingProfile]);
+
+  // Mutation for updating profile
+  const profileUpdateMutation = useMutation({
+    mutationFn: async (profileUpdates: Partial<UserProfile>) => {
+      if (!user?.id) throw new Error("User not authenticated for profile update.");
+      let newAvatarUrlToUpdate = profileUpdates.avatar_url;
+      if (avatarFile) {
+        const uploadedUrl = await uploadProfileAvatar(user.id, avatarFile);
+        if (uploadedUrl) {
+          newAvatarUrlToUpdate = uploadedUrl;
+        } else {
+          throw new Error('Avatar upload failed during mutation.');
         }
-      } else {
-        setIsProfileLoading(false);
       }
-    };
-    loadUserProfile();
-  }, [user, toast]);
-
-  useEffect(() => {
-    const fetchCountries = async () => {
-      try {
-        setIsCountriesLoading(true);
-        const response = await fetch('https://restcountries.com/v3.1/all?fields=name');
-        if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-        const result: RestCountryNameOnly[] = await response.json();
-        const loadedCountries = result.map(country => ({
-          code: country.name.common, 
-          name: country.name.common
-        })).sort((a, b) => a.name.localeCompare(b.name)); 
-        setCountries(loadedCountries);
-      } catch (error) {
-        console.error("Failed to fetch countries:", error);
-        toast({ title: "Error", description: "Failed to load countries list.", variant: "destructive" });
-      } finally {
-        setIsCountriesLoading(false);
+      // Ensure avatar_url is correctly set in the updates object for updateUserProfile
+      const finalUpdates = { ...profileUpdates, avatar_url: newAvatarUrlToUpdate };
+      return updateUserProfile(user.id, finalUpdates);
+    },
+    onSuccess: (data) => {
+      // data from updateUserProfile is { data: updatedProfile, error }, so access data.data
+      const updatedProfile = data?.data;
+      if (updatedProfile) {
+         setFormData({ // Update local form state from the successful mutation response
+            firstName: updatedProfile.first_name || '',
+            lastName: updatedProfile.last_name || '',
+            username: updatedProfile.username || '',
+            dateOfBirth: updatedProfile.date_of_birth || '',
+            country: updatedProfile.country || '',
+            mobileNumber: updatedProfile.mobile_number || '',
+            bio: updatedProfile.bio || '',
+            avatarUrl: updatedProfile.avatar_url || '',
+        });
+        setAvatarFile(null);
+        setAvatarPreview(null);
       }
-    };
-    fetchCountries();
-  }, [toast]);
+      toast({ title: "Success!", description: "Profile updated successfully!" });
+      queryClient.invalidateQueries({ queryKey: ['userProfile', user?.id] }); // Invalidate to refetch profile elsewhere
+    },
+    onError: (error: Error) => {
+      console.error("Failed to update profile:", error);
+      toast({ title: "Update Failed", description: error.message || "Could not update profile. Please try again.", variant: "destructive" });
+    },
+  });
 
   useEffect(() => {
     return () => {
@@ -130,77 +164,40 @@ const EditProfileForm: React.FC<EditProfileFormProps> = () => {
       toast({ title: "Error", description: "User not authenticated.", variant: "destructive" });
       return;
     }
-    setIsSubmitting(true);
+    
+    const updates: Partial<UserProfile> = {
+      first_name: formData.firstName,
+      last_name: formData.lastName,
+      username: formData.username,
+      date_of_birth: formData.dateOfBirth || null,
+      country: formData.country,
+      mobile_number: formData.mobileNumber || null,
+      bio: formData.bio || null,
+      avatar_url: formData.avatarUrl, // Initial avatar_url, mutation will handle new upload
+    };
 
-    let newAvatarUrl = formData.avatarUrl;
-
-    try {
-      if (avatarFile) {
-        const uploadedUrl = await uploadProfileAvatar(user.id, avatarFile);
-        if (uploadedUrl) {
-          newAvatarUrl = uploadedUrl;
-        } else {
-          throw new Error('Avatar upload failed.');
-        }
-      }
-
-      const profileUpdates: Partial<UserProfile> = {
-        first_name: formData.firstName,
-        last_name: formData.lastName,
-        username: formData.username,
-        date_of_birth: formData.dateOfBirth || null,
-        country: formData.country,
-        mobile_number: formData.mobileNumber || null,
-        bio: formData.bio || null,
-        avatar_url: newAvatarUrl, 
-      };
-      
-      Object.keys(profileUpdates).forEach(key => {
+    // Clean undefined fields (optional, Supabase might handle it)
+    Object.keys(updates).forEach(key => {
         const k = key as keyof Partial<UserProfile>;
-        if (profileUpdates[k] === undefined) {
-          delete profileUpdates[k];
+        if (updates[k] === undefined) {
+          delete updates[k];
         }
       });
 
-      const { data: updatedProfile, error: updateError } = await updateUserProfile(user.id, profileUpdates);
-
-      if (updateError) {
-        throw updateError;
-      }
-
-      if (updatedProfile) {
-        setFormData({
-            firstName: updatedProfile.first_name || '',
-            lastName: updatedProfile.last_name || '',
-            username: updatedProfile.username || '',
-            dateOfBirth: updatedProfile.date_of_birth || '',
-            country: updatedProfile.country || '',
-            mobileNumber: updatedProfile.mobile_number || '',
-            bio: updatedProfile.bio || '',
-            avatarUrl: updatedProfile.avatar_url || '',
-        });
-        setAvatarFile(null);
-        setAvatarPreview(null); 
-        toast({ title: "Success!", description: "Profile updated successfully!" });
-      }
-
-    } catch (error: any) {
-      console.error("Failed to update profile:", error);
-      toast({ title: "Update Failed", description: error.message || "Could not update profile. Please try again.", variant: "destructive" });
-    } finally {
-      setIsSubmitting(false);
-    }
+    profileUpdateMutation.mutate(updates);
   };
 
   const displayAvatarSrc = avatarPreview || formData.avatarUrl;
 
-  if (isProfileLoading) {
+  if (parentIsLoadingProfile) { // Show loading if parent is loading the profile
     return (
       <div className="p-6 space-y-6 rounded-lg bg-card shadow-sm text-center">
-        <p>Loading profile...</p>
+        <p>Loading profile form...</p>
       </div>
     );
   }
+  // Note: No longer using isFormLoading state, relying on parentIsLoadingProfile for profile
+  // and isCountriesLoading for countries. The submit button will handle combined loading states.
 
   return (
     <div className="p-6 space-y-6 rounded-lg bg-card shadow-sm">
@@ -252,15 +249,17 @@ const EditProfileForm: React.FC<EditProfileFormProps> = () => {
                 value={formData.country} 
                 onChange={handleChange} 
                 required 
-                disabled={isCountriesLoading}
+                disabled={isCountriesLoading || !countries} // Disable if loading or no countries data
                 className="block w-full rounded-md border border-border bg-input px-3 py-2 text-foreground placeholder:text-muted-foreground focus:outline-none"
               >
                 {isCountriesLoading ? (
                   <option value="" disabled>Loading countries...</option>
+                ) : countriesError ? (
+                  <option value="" disabled>Error loading countries</option>
                 ) : (
                   <>
                     <option value="" disabled={formData.country !== ''}>Select Country</option>
-                    {countries.map(country => (
+                    {countries?.map(country => (
                       <option key={country.code} value={country.name}>
                         {country.name}
                       </option>
@@ -320,9 +319,9 @@ const EditProfileForm: React.FC<EditProfileFormProps> = () => {
           <button 
             type="submit" 
             className="inline-flex justify-center rounded-md border border-transparent bg-primary px-4 py-2 text-sm font-medium text-primary-foreground shadow-sm hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 disabled:opacity-50"
-            disabled={isProfileLoading || isCountriesLoading || isSubmitting}
+            disabled={parentIsLoadingProfile || isCountriesLoading || profileUpdateMutation.isPending}
           >
-            {isSubmitting ? 'Saving...' : (isProfileLoading ? 'Loading...' : 'Save Changes')}
+            {profileUpdateMutation.isPending ? 'Saving...' : (parentIsLoadingProfile || isCountriesLoading ? 'Loading Data...' : 'Save Changes')}
           </button>
         </div>
       </form>

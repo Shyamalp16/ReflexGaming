@@ -20,61 +20,54 @@ import { useRouter, usePathname } from "next/navigation"
 import { useEffect, useState } from "react"
 import { getUserProfile } from "@/lib/supabase/db"
 import { cn } from "@/lib/utils"
+import { useQuery } from "@tanstack/react-query"
+
+// Reusable fetcher function for user profile
+const fetchUserProfile = async (userId: string) => {
+  if (!userId) throw new Error("User ID is required to fetch profile.");
+  const profile = await getUserProfile(userId);
+  // if (!profile) throw new Error("Profile not found."); // useQuery handles null as data
+  return profile;
+};
 
 export function Navbar() {
-  const { user, isLoading, signOut } = useAuth()
+  const { user, isLoading: authIsLoading, signOut } = useAuth()
   const router = useRouter()
   const pathname = usePathname()
-
-  const [profileAvatarUrl, setProfileAvatarUrl] = useState<string | null>(null)
-  const [profileUsername, setProfileUsername] = useState<string | null>(null)
-  const [isProfileLoading, setIsProfileLoading] = useState(false)
   const [isScrolled, setIsScrolled] = useState(false)
 
   useEffect(() => {
     const handleScroll = () => {
       setIsScrolled(window.scrollY > 20)
     }
-
     window.addEventListener("scroll", handleScroll)
     return () => window.removeEventListener("scroll", handleScroll)
   }, [])
 
-  useEffect(() => {
-    const fetchProfile = async () => {
-      if (user?.id) {
-        setIsProfileLoading(true)
-        try {
-          const profile = await getUserProfile(user.id)
-          if (profile) {
-            setProfileAvatarUrl(profile.avatar_url || null)
-            setProfileUsername(profile.username || user.email?.split('@')[0] || "User")
-          } else {
-            setProfileUsername(user.email?.split('@')[0] || "User")
-          }
-        } catch (error) {
-          console.error("Error fetching profile for navbar:", error)
-          setProfileUsername(user.email?.split('@')[0] || "User")
-        } finally {
-          setIsProfileLoading(false)
-        }
-      }
-    }
-
-    if (!isLoading && user) {
-      fetchProfile()
-    }
-  }, [user, isLoading])
+  // Use TanStack Query to fetch user profile
+  const { 
+    data: userProfile,
+    isLoading: isProfileLoading,
+    // error: profileError, // Optionally handle error state
+  } = useQuery({
+    queryKey: ['userProfile', user?.id], // Query key includes user ID
+    queryFn: () => user?.id ? fetchUserProfile(user.id) : Promise.resolve(null),
+    enabled: !!user && !authIsLoading, // Only run query if user is authenticated and auth is not loading
+    // staleTime can be configured here or globally as we did in QueryProvider
+  });
 
   const handleLogout = async () => {
-    await signOut()
+    await signOut() // This will change auth state, and useQuery will refetch/reset if necessary
     router.push("/")
   }
   
   const getAvatarFallback = () => {
-    if (isProfileLoading) return "..."
-    return (profileUsername || "U").charAt(0).toUpperCase()
+    if (isProfileLoading && !userProfile) return "..."; // Show loading only if no cached data yet
+    return (userProfile?.username || user?.email?.split('@')[0] || "U").charAt(0).toUpperCase();
   }
+
+  const displayUsername = userProfile?.username || user?.email?.split('@')[0] || "User";
+  const avatarUrl = userProfile?.avatar_url || null;
 
   return (
     <header 
@@ -152,26 +145,26 @@ export function Navbar() {
 
         <div className="flex items-center gap-4">
           <ThemeToggle />
-          {isLoading ? (
+          {authIsLoading ? ( // Use authIsLoading for the initial auth check loader
             <div className="h-9 w-20 animate-pulse bg-muted rounded-md"></div>
           ) : user ? (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="ghost" className="flex items-center gap-2 rounded-full px-2 py-1 h-auto">
                   <Avatar className="h-7 w-7">
-                    <AvatarImage src={profileAvatarUrl || undefined} alt={profileUsername || "User Avatar"} />
+                    <AvatarImage src={avatarUrl || undefined} alt={displayUsername || "User Avatar"} />
                     <AvatarFallback>{getAvatarFallback()}</AvatarFallback>
                   </Avatar>
-                  {!isProfileLoading && profileUsername && (
-                    <span className="text-sm font-medium hidden sm:inline-block">{profileUsername}</span>
+                  {!isProfileLoading && displayUsername && (
+                    <span className="text-sm font-medium hidden sm:inline-block">{displayUsername}</span>
                   )}
-                  {isProfileLoading && <span className="text-sm font-medium hidden sm:inline-block">Loading...</span>}
+                  {(isProfileLoading && !userProfile) && <span className="text-sm font-medium hidden sm:inline-block">Loading...</span>}
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-56">
                 <DropdownMenuLabel>
                   <div className="flex flex-col space-y-1">
-                    <p className="text-sm font-medium leading-none">{profileUsername || "My Account"}</p>
+                    <p className="text-sm font-medium leading-none">{displayUsername || "My Account"}</p>
                     {user.email && <p className="text-xs leading-none text-muted-foreground">{user.email}</p>}
                   </div>
                 </DropdownMenuLabel>
