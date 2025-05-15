@@ -7,7 +7,7 @@ export async function signUpNewUser(credentials: SignUpWithPasswordCredentials &
         password: credentials.password!,
         options: {
             ...(credentials.options || {}),
-            emailRedirectTo: 'http://localhost:3000/auth/confirmed',
+            emailRedirectTo: 'https://reflexgaming.vercel.app/auth/confirmed',
         }
     };
 

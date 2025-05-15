@@ -24,7 +24,7 @@ export default function ForgotPasswordPage() {
     setError("")
 
     const {data, error: resetLinkError} = await supabase.auth.resetPasswordForEmail(email, {
-      redirectTo: 'http://localhost:3000/auth/update-password'
+      redirectTo: 'https://reflexgaming.vercel.app/auth/update-password'
     })
     setIsLoading(false)
 
