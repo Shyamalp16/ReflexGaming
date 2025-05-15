@@ -4,25 +4,25 @@
 
 @layer base {
   :root {
-    --background: 350 100% 95%; /* Pinker Light Pink */
-    --foreground: 240 10% 3.9%;
-    --card: 350 100% 94%; /* Pinker Light Pink - Card */
-    --card-foreground: 240 10% 3.9%;
-    --popover: 350 100% 94%; /* Pinker Light Pink - Popover */
-    --popover-foreground: 240 10% 3.9%;
-    --primary: 330 70% 50%; /* Deep Magenta/Purple */
-    --primary-foreground: 0 0% 98%;
-    --secondary: 24 95% 53%;
-    --secondary-foreground: 0 0% 98%;
-    --muted: 350 90% 92%; /* Pinker Muted Pink */
-    --muted-foreground: 240 3.8% 46.1%;
-    --accent: 220 10% 75%; /* Light Muted Blue-Gray */
-    --accent-foreground: 220 10% 15%; /* Dark Gray for text on light accent */
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 0 0% 98%;
-    --border: 350 80% 88%; /* Pinker Soft Pink Border */
-    --input: 350 80% 88%; /* Pinker Soft Pink Input */
-    --ring: 330 70% 50%; /* Deep Magenta/Purple for Ring */
+    --background: 0 0% 100%; /* White */
+    --foreground: 240 10% 3.9%; /* Dark Gray (almost black) */
+    --card: 0 0% 100%; /* White */
+    --card-foreground: 240 10% 3.9%; /* Dark Gray */
+    --popover: 0 0% 100%; /* White */
+    --popover-foreground: 240 10% 3.9%; /* Dark Gray */
+    --primary: 330 70% 50%; /* Deep Magenta/Purple - Retained from original */
+    --primary-foreground: 0 0% 98%; /* Retained */
+    --secondary: 24 95% 53%; /* Retained */
+    --secondary-foreground: 0 0% 98%; /* Retained */
+    --muted: 240 5% 96.1%; /* Lighter Gray (Tailwind gray-100) */
+    --muted-foreground: 240 4% 46.1%; /* Muted Text (Tailwind gray-500) */
+    --accent: 240 5% 90.1%; /* Light Gray (Tailwind gray-200 for subtle accents) */
+    --accent-foreground: 240 10% 3.9%; /* Dark text for on-accent elements */
+    --destructive: 0 84.2% 60.2%; /* Retained */
+    --destructive-foreground: 0 0% 98%; /* Retained */
+    --border: 240 6% 90%;      /* Light Gray (similar to gray-200) */
+    --input: 240 6% 90%;       /* Light Gray (similar to gray-200) */
+    --ring: 330 70% 50%; /* Deep Magenta/Purple for Ring - Retained */
     --radius: 0.5rem;
   }
 
