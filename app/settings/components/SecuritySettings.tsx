@@ -26,14 +26,22 @@ export default function SecuritySettings() {
   const handleChangePassword = (e: React.FormEvent) => {
     e.preventDefault();
     setPasswordError('');
-    if (newPassword !== confirmNewPassword) {
-      setPasswordError("New passwords do not match.");
-      return;
-    }
+
     if (!currentPassword || !newPassword || !confirmNewPassword) {
       setPasswordError("All password fields are required.");
       return;
     }
+
+    if (newPassword.length <= 8) {
+      setPasswordError("New password must be longer than 8 characters.");
+      return;
+    }
+
+    if (newPassword !== confirmNewPassword) {
+      setPasswordError("New passwords do not match.");
+      return;
+    }
+    
     console.log("Change Password Submitted", { currentPassword, newPassword });
     alert("Password change submitted (no backend)"); 
     // Consider closing the dialog programmatically here
@@ -68,7 +76,7 @@ export default function SecuritySettings() {
       <div className="p-4 border border-border rounded-md space-y-3">
         <h3 className="text-lg font-medium leading-6 text-foreground">Password Management</h3>
         <p className="text-sm text-muted-foreground">
-          Update your password regularly to keep your account secure.
+          Update your password regularly to keep your account secure. Choose a strong password longer than 8 characters.
         </p>
         <div>
           <Dialog>
@@ -79,7 +87,7 @@ export default function SecuritySettings() {
               <DialogHeader>
                 <DialogTitle>Change Password</DialogTitle>
                 <DialogDescription>
-                  Enter your current password and new password below.
+                  Enter your current password and new password below. New password must be longer than 8 characters.
                 </DialogDescription>
               </DialogHeader>
               <form onSubmit={handleChangePassword} className="space-y-4 py-4">

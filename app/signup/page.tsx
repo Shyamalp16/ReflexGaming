@@ -2,7 +2,7 @@
 
 import type React from "react"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { Mail, Lock, User } from "lucide-react"
@@ -12,28 +12,37 @@ import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { AnimatedButton } from "@/components/animated-button"
 import { Navbar } from "@/components/navbar"
+import { useAuth } from "@/context/AuthContext"
 
 // exported functions
 import { signUpNewUser } from "@/lib/supabase/auth"
 
 export default function SignupPage() {
   const router = useRouter()
+  const { user, isLoading: authIsLoading, session } = useAuth()
+
   const [name, setName] = useState("")
   const [username, setUsername] = useState("")
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
   const [confirmPassword, setConfirmPassword] = useState("")
-  const [isLoading, setIsLoading] = useState(false)
+  const [isSubmitting, setIsSubmitting] = useState(false)
   const [error, setError] = useState("")
+
+  useEffect(() => {
+    if (!authIsLoading && session) {
+      router.push("/dashboard")
+    }
+  }, [authIsLoading, session, router])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    setIsLoading(true)
+    setIsSubmitting(true)
     setError("")
 
     if (password !== confirmPassword) {
       setError("Passwords do not match.")
-      setIsLoading(false)
+      setIsSubmitting(false)
       return
     }
 
@@ -47,7 +56,7 @@ export default function SignupPage() {
         }
       }
     })
-    setIsLoading(false)
+    setIsSubmitting(false)
 
     if(signUpError){
       setError(signUpError.message)
@@ -59,12 +68,18 @@ export default function SignupPage() {
     }
   }
 
+  if (authIsLoading || (!authIsLoading && session)) {
+    return (
+      <div className="min-h-screen bg-background text-foreground flex flex-col items-center justify-center">
+        <Navbar />
+        <p className="mt-8">Loading...</p>
+      </div>
+    );
+  }
+  
   return (
     <div className="min-h-screen bg-background text-foreground bg-dark-radial flex flex-col">
-      {/* Header */}
       <Navbar />
-
-      {/* Signup Form */}
       <div className="flex-1 flex items-center justify-center p-4">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -165,8 +180,8 @@ export default function SignupPage() {
               </CardContent>
               <CardFooter className="flex flex-col space-y-4">
                 {error && <p className="text-sm text-red-500 dark:text-red-400">{error}</p>}
-                <AnimatedButton type="submit" className="w-full" disabled={isLoading}>
-                  {isLoading ? "Creating account..." : "Create account"}
+                <AnimatedButton type="submit" className="w-full" disabled={isSubmitting}>
+                  {isSubmitting ? "Creating account..." : "Create account"}
                 </AnimatedButton>
                 <div className="text-center text-sm">
                   Already have an account?{" "}
@@ -180,7 +195,6 @@ export default function SignupPage() {
         </motion.div>
       </div>
 
-      {/* Footer */}
       <footer className="container mx-auto py-4 px-4 text-center text-sm text-muted-foreground">
         <p>© {new Date().getFullYear()} Reflex Cloud Gaming. All rights reserved.</p>
       </footer>

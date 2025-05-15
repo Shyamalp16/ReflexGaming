@@ -2,7 +2,7 @@
 
 import type React from "react"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { Mail, Lock } from "lucide-react"
@@ -12,37 +12,59 @@ import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { AnimatedButton } from "@/components/animated-button"
 import { Navbar } from "@/components/navbar"
+import { useAuth } from "@/context/AuthContext"
 
 //exported functions
 import { signInUser } from "@/lib/supabase/auth"
 
 export default function LoginPage() {
   const router = useRouter()
+  const { user, isLoading: authIsLoading, session } = useAuth()
+
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
-  const [isLoading, setIsLoading] = useState(false)
+  const [isSubmitting, setIsSubmitting] = useState(false)
   const [error, setError] = useState("")
+
+  useEffect(() => {
+    if (!authIsLoading && session) {
+      router.push("/dashboard")
+    }
+  }, [authIsLoading, session, router])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    setIsLoading(true)
+    setIsSubmitting(true)
     setError("")
 
     const {data, error: signInError} = await signInUser({email, password})
-    setIsLoading(false)
+    setIsSubmitting(false)
 
     if(signInError){
       setError(signInError.message)
       return
     }
 
-    // Simulate login process
     if(data.user){
-      console.log("Login Successful")
-      router.push("/dashboard")
+      // Successful login is handled by AuthContext which will update session 
+      // and the useEffect above will trigger the redirect.
+      // No explicit router.push("/dashboard") needed here anymore if AuthContext is robust.
+      // However, keeping it can be a fallback if context update is slow.
+      router.push("/dashboard") 
     }
   }
 
+  if (authIsLoading || (!authIsLoading && session)) {
+    // Show loading indicator or null while checking auth state or redirecting
+    return (
+      <div className="min-h-screen bg-background text-foreground flex flex-col items-center justify-center">
+        <Navbar />
+        <p className="mt-8">Loading...</p>
+      </div>
+    );
+  }
+
+  // If not loading and no session, show the login form
   return (
     <div className="min-h-screen bg-background text-foreground bg-dark-radial flex flex-col">
       {/* Header */}
@@ -114,8 +136,8 @@ export default function LoginPage() {
                     {error}
                   </p>
                 )}
-                <AnimatedButton type="submit" className="w-full" disabled={isLoading}>
-                  {isLoading ? "Logging in..." : "Login"}
+                <AnimatedButton type="submit" className="w-full" disabled={isSubmitting}>
+                  {isSubmitting ? "Logging in..." : "Login"}
                 </AnimatedButton>
                 <div className="text-center text-sm">
                   Don&apos;t have an account?{" "}
