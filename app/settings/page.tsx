@@ -6,8 +6,8 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
 import { Navbar } from '@/components/navbar';
-import EditProfileForm from '../profile/components/EditProfileForm';
-import SecuritySettings from '../profile/components/SecuritySettings';
+import EditProfileForm from './components/EditProfileForm';
+import SecuritySettings from './components/SecuritySettings';
 import {
   LayoutDashboard, UserCog, Swords, ShieldHalf, MessageSquare, CircleUserRound, Settings2, ShieldCheck, Gamepad2, DollarSign, HelpCircle, FileText, Info,
   Trophy, Users
