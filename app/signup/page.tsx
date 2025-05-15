@@ -19,6 +19,7 @@ import { signUpNewUser } from "@/lib/supabase/auth"
 export default function SignupPage() {
   const router = useRouter()
   const [name, setName] = useState("")
+  const [username, setUsername] = useState("")
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
   const [confirmPassword, setConfirmPassword] = useState("")
@@ -36,7 +37,16 @@ export default function SignupPage() {
       return
     }
 
-    const {data, error: signUpError} = await signUpNewUser({email, password})
+    const {data, error: signUpError} = await signUpNewUser({
+      email,
+      password,
+      options: {
+        data: {
+          username: username,
+          full_name: name
+        }
+      }
+    })
     setIsLoading(false)
 
     if(signUpError){
@@ -44,8 +54,7 @@ export default function SignupPage() {
       return
     }
 
-    if(data.user){
-      //will work on a email verification page
+    if(data?.user){
       router.push("/auth/verify-email")
     }
   }
@@ -81,6 +90,21 @@ export default function SignupPage() {
                       className="pl-10"
                       value={name}
                       onChange={(e) => setName(e.target.value)}
+                      required
+                    />
+                  </div>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="username">Username</Label>
+                  <div className="relative">
+                    <User className="absolute left-3 top-2.5 h-5 w-5 text-muted-foreground" />
+                    <Input
+                      id="username"
+                      type="text"
+                      placeholder="KirA"
+                      className="pl-10"
+                      value={username}
+                      onChange={(e) => setUsername(e.target.value)}
                       required
                     />
                   </div>
