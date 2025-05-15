@@ -154,14 +154,16 @@ export default function SettingsPage() {
                   {section.title}
                 </h3>
               )}
-              {section.links.map(link => (
-                <SidebarLink 
-                  key={link.id}
-                  {...link}
-                  isActive={activeView === link.id}
-                  onClick={() => !link.isExternal && setActiveView(link.id)}
-                />
-              ))}
+              <div className={section.title ? "mt-2 space-y-1" : "space-y-1"}>
+                {section.links.map(link => (
+                  <SidebarLink 
+                    key={link.id}
+                    {...link}
+                    isActive={activeView === link.id}
+                    onClick={() => !link.isExternal && setActiveView(link.id)}
+                  />
+                ))}
+              </div>
             </div>
           ))}
         </aside>

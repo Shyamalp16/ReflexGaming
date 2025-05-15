@@ -2,6 +2,11 @@ import React, { useState, useEffect } from 'react';
 import { useAuth } from '@/context/AuthContext'; 
 import { getUserProfile, updateUserProfile, UserProfile } from '@/lib/supabase/db'; 
 import { uploadProfileAvatar } from '@/lib/supabase/storage'; // Added for avatar uploads
+import { zodResolver } from "@hookform/resolvers/zod";
+import { CalendarIcon, Loader2, UserCircle } from "lucide-react";
+import { useToast } from "@/hooks/use-toast"; // Corrected import path
+import { z } from "zod";
+import { format } from "date-fns";
 
 interface CountryName {
   common: string;
@@ -18,6 +23,7 @@ interface EditProfileFormProps {
 
 const EditProfileForm: React.FC<EditProfileFormProps> = () => {
   const { user } = useAuth(); 
+  const { toast } = useToast(); // Initialize toast function
   const [formData, setFormData] = useState({
     firstName: '',
     lastName: '',
@@ -35,13 +41,11 @@ const EditProfileForm: React.FC<EditProfileFormProps> = () => {
   const [isCountriesLoading, setIsCountriesLoading] = useState(true);
   const [isProfileLoading, setIsProfileLoading] = useState(true); 
   const [isSubmitting, setIsSubmitting] = useState(false); // State for submission loading
-  const [submitMessage, setSubmitMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
 
   useEffect(() => {
     const loadUserProfile = async () => {
       if (user?.id) {
         setIsProfileLoading(true);
-        setSubmitMessage(null);
         try {
           const profileData = await getUserProfile(user.id);
           if (profileData) {
@@ -61,7 +65,7 @@ const EditProfileForm: React.FC<EditProfileFormProps> = () => {
           }
         } catch (error) {
           console.error("Failed to load user profile:", error);
-          setSubmitMessage({ type: 'error', text: 'Failed to load profile.' });
+          toast({ title: "Error", description: "Failed to load profile.", variant: "destructive" });
         } finally {
           setIsProfileLoading(false);
         }
@@ -70,7 +74,7 @@ const EditProfileForm: React.FC<EditProfileFormProps> = () => {
       }
     };
     loadUserProfile();
-  }, [user]);
+  }, [user, toast]);
 
   useEffect(() => {
     const fetchCountries = async () => {
@@ -86,13 +90,13 @@ const EditProfileForm: React.FC<EditProfileFormProps> = () => {
         setCountries(loadedCountries);
       } catch (error) {
         console.error("Failed to fetch countries:", error);
-        setSubmitMessage({ type: 'error', text: 'Failed to load countries list.' });
+        toast({ title: "Error", description: "Failed to load countries list.", variant: "destructive" });
       } finally {
         setIsCountriesLoading(false);
       }
     };
     fetchCountries();
-  }, []);
+  }, [toast]);
 
   useEffect(() => {
     return () => {
@@ -105,7 +109,6 @@ const EditProfileForm: React.FC<EditProfileFormProps> = () => {
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
     setFormData(prevState => ({ ...prevState, [name]: value }));
-    if (submitMessage) setSubmitMessage(null); // Clear message on new input
   };
 
   const handleAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -120,17 +123,15 @@ const EditProfileForm: React.FC<EditProfileFormProps> = () => {
       setAvatarFile(null);
       setAvatarPreview(null);
     }
-    if (submitMessage) setSubmitMessage(null); // Clear message
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!user?.id) {
-      setSubmitMessage({ type: 'error', text: 'User not authenticated.' });
+      toast({ title: "Error", description: "User not authenticated.", variant: "destructive" });
       return;
     }
     setIsSubmitting(true);
-    setSubmitMessage(null);
 
     let newAvatarUrl = formData.avatarUrl; // Keep existing if no new upload
 
@@ -155,7 +156,6 @@ const EditProfileForm: React.FC<EditProfileFormProps> = () => {
         avatar_url: newAvatarUrl, 
       };
       
-      // Remove undefined fields to prevent Supabase from trying to set them to null if not provided
       Object.keys(profileUpdates).forEach(key => {
         const k = key as keyof Partial<UserProfile>;
         if (profileUpdates[k] === undefined) {
@@ -163,10 +163,10 @@ const EditProfileForm: React.FC<EditProfileFormProps> = () => {
         }
       });
 
-      const { data: updatedProfile, error } = await updateUserProfile(user.id, profileUpdates);
+      const { data: updatedProfile, error: updateError } = await updateUserProfile(user.id, profileUpdates);
 
-      if (error) {
-        throw error;
+      if (updateError) {
+        throw updateError;
       }
 
       if (updatedProfile) {
@@ -182,12 +182,12 @@ const EditProfileForm: React.FC<EditProfileFormProps> = () => {
         });
         setAvatarFile(null); // Clear the selected file
         setAvatarPreview(null); // Clear the preview for the uploaded file
-        setSubmitMessage({ type: 'success', text: 'Profile updated successfully!' });
+        toast({ title: "Success!", description: "Profile updated successfully!" });
       }
 
     } catch (error: any) {
       console.error("Failed to update profile:", error);
-      setSubmitMessage({ type: 'error', text: error.message || 'Failed to update profile. Please try again.' });
+      toast({ title: "Update Failed", description: error.message || "Could not update profile. Please try again.", variant: "destructive" });
     } finally {
       setIsSubmitting(false);
     }
@@ -206,11 +206,6 @@ const EditProfileForm: React.FC<EditProfileFormProps> = () => {
   return (
     <div className="p-6 space-y-6 rounded-lg bg-card shadow-sm">
       <h2 className="text-2xl font-semibold mb-6 text-center">Edit Profile</h2>
-      {submitMessage && (
-        <div className={`p-3 rounded-md text-sm ${submitMessage.type === 'success' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
-          {submitMessage.text}
-        </div>
-      )}
       <form onSubmit={handleSubmit} className="space-y-8">
         <div className="p-4 border border-border rounded-md space-y-4">
           <h3 className="text-lg font-medium leading-6 text-foreground">Personal Information</h3>
@@ -224,7 +219,7 @@ const EditProfileForm: React.FC<EditProfileFormProps> = () => {
               <input type="text" id="lastName" name="lastName" value={formData.lastName} onChange={handleChange} className="block w-full rounded-md border border-border bg-input px-3 py-2 text-foreground placeholder:text-muted-foreground focus:outline-none" />
             </div>
             <div>
-              <label htmlFor="username" className="block text-sm font-medium text-muted-foreground mb-1">Username / Display Name</label>
+              <label htmlFor="username" className="block text-sm font-medium text-muted-foreground mb-1">Username</label>
               <input type="text" id="username" name="username" value={formData.username} onChange={handleChange} className="block w-full rounded-md border border-border bg-input px-3 py-2 text-foreground placeholder:text-muted-foreground focus:outline-none" required />
             </div>
             <div className="md:col-span-1">
@@ -298,7 +293,7 @@ const EditProfileForm: React.FC<EditProfileFormProps> = () => {
                 />
               </div>
               <div>
-                <label htmlFor="avatar" className="block text-sm font-medium text-muted-foreground mb-1">Avatar / Profile Picture</label>
+                <label htmlFor="avatar" className="block text-sm font-medium text-muted-foreground mb-1">Avatar</label>
                 <input 
                   type="file" 
                   id="avatar" 
