@@ -16,8 +16,8 @@
     --secondary-foreground: 0 0% 98%;
     --muted: 350 90% 92%; /* Pinker Muted Pink */
     --muted-foreground: 240 3.8% 46.1%;
-    --accent: 24 95% 53%;
-    --accent-foreground: 0 0% 98%;
+    --accent: 220 10% 75%; /* Light Muted Blue-Gray */
+    --accent-foreground: 220 10% 15%; /* Dark Gray for text on light accent */
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 0 0% 98%;
     --border: 350 80% 88%; /* Pinker Soft Pink Border */
@@ -39,8 +39,8 @@
     --secondary-foreground: 0 0% 98%;
     --muted: 217 33% 17%;
     --muted-foreground: 215 20.2% 65.1%;
-    --accent: 24 95% 53%;
-    --accent-foreground: 0 0% 98%;
+    --accent: 220 10% 25%; /* Darker Muted Blue-Gray (lighter than bg) */
+    --accent-foreground: 220 10% 95%; /* Light Gray/White for text on dark accent */
     --destructive: 0 62.8% 30.6%;
     --destructive-foreground: 0 0% 98%;
     --border: 217 33% 17%;

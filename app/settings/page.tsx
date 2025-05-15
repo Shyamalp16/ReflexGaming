@@ -7,6 +7,7 @@ import { useRouter } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
 import { Navbar } from '@/components/navbar';
 import EditProfileForm from '../profile/components/EditProfileForm';
+import SecuritySettings from '../profile/components/SecuritySettings';
 import {
   LayoutDashboard, UserCog, Swords, ShieldHalf, MessageSquare, CircleUserRound, Settings2, ShieldCheck, Gamepad2, DollarSign, HelpCircle, FileText, Info,
   Trophy, Users
@@ -95,6 +96,9 @@ export default function SettingsPage() {
   const renderContent = () => {
     if (activeView === 'manageAccount_editProfile') {
       return <EditProfileForm />;
+    }
+    if (activeView === 'manageAccount_changePassword') {
+      return <SecuritySettings />;
     }
     // Generic placeholder for other views
     // Ensure the activeView string formatting is consistent if you add more views

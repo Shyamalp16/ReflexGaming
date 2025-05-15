@@ -1,5 +1,16 @@
 import React, { useState, useEffect } from 'react';
 
+// Updated type definitions for restcountries.com API (fields=name)
+interface CountryName {
+  common: string;
+  official: string;
+  // nativeName might also be present but common/official are primary
+}
+
+interface RestCountryNameOnly {
+  name: CountryName;
+}
+
 interface EditProfileFormProps {
   // Add props if needed, e.g., initial data
 }
@@ -9,15 +20,42 @@ const EditProfileForm: React.FC<EditProfileFormProps> = () => {
     firstName: '',
     lastName: '',
     dateOfBirth: '',
-    country: '',
+    country: '', // Will store the selected country name
     mobileNumber: '',
     username: '',
     bio: '',
-    timezone: '',
+    // timezone: '',
     // avatar: null, // Will be handled by file input, preview by avatarPreview
   });
   const [dateInputType, setDateInputType] = useState<'text' | 'date'>('text');
   const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
+  const [countries, setCountries] = useState<{ code: string; name: string }[]>([]);
+  const [isCountriesLoading, setIsCountriesLoading] = useState(true);
+
+  useEffect(() => {
+    // Fetch countries from restcountries.com (only name field)
+    const fetchCountries = async () => {
+      try {
+        setIsCountriesLoading(true);
+        const response = await fetch('https://restcountries.com/v3.1/all?fields=name');
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        const result: RestCountryNameOnly[] = await response.json();
+        const loadedCountries = result.map(country => ({
+          code: country.name.common, // Use common name for key as cca2 is not fetched
+          name: country.name.common
+        })).sort((a, b) => a.name.localeCompare(b.name)); // Sort alphabetically by name
+        setCountries(loadedCountries);
+      } catch (error) {
+        console.error("Failed to fetch countries:", error);
+        // Optionally, set an error state here to inform the user
+      } finally {
+        setIsCountriesLoading(false);
+      }
+    };
+    fetchCountries();
+  }, []);
 
   useEffect(() => {
     // Cleanup function to revoke the object URL to prevent memory leaks
@@ -104,16 +142,37 @@ const EditProfileForm: React.FC<EditProfileFormProps> = () => {
           <div className="space-y-4">
             <div className="md:w-1/2">
               <label htmlFor="country" className="block text-sm font-medium text-muted-foreground mb-1">Country</label>
-              <input type="text" id="country" name="country" value={formData.country} onChange={handleChange} className="block w-full rounded-md border border-border bg-input px-3 py-2 text-foreground placeholder:text-muted-foreground focus:outline-none" required />
+              <select 
+                id="country" 
+                name="country" 
+                value={formData.country} 
+                onChange={handleChange} 
+                required 
+                disabled={isCountriesLoading}
+                className="block w-full rounded-md border border-border bg-input px-3 py-2 text-foreground placeholder:text-muted-foreground focus:outline-none"
+              >
+                {isCountriesLoading ? (
+                  <option value="" disabled>Loading countries...</option>
+                ) : (
+                  <>
+                    <option value="" disabled>Select Country</option>
+                    {countries.map(country => (
+                      <option key={country.code} value={country.name}>
+                        {country.name}
+                      </option>
+                    ))}
+                  </>
+                )}
+              </select>
             </div>
             <div className="md:w-1/2">
               <label htmlFor="mobileNumber" className="block text-sm font-medium text-muted-foreground mb-1">Mobile Number</label>
               <input type="tel" id="mobileNumber" name="mobileNumber" value={formData.mobileNumber} onChange={handleChange} className="block w-full rounded-md border border-border bg-input px-3 py-2 text-foreground placeholder:text-muted-foreground focus:outline-none" />
             </div>
-            <div className="md:w-1/2">
+            {/* <div className="md:w-1/2">
               <label htmlFor="timezone" className="block text-sm font-medium text-muted-foreground mb-1">Timezone</label>
               <input type="text" id="timezone" name="timezone" value={formData.timezone} onChange={handleChange} className="block w-full rounded-md border border-border bg-input px-3 py-2 text-foreground placeholder:text-muted-foreground focus:outline-none" required />
-            </div>
+            </div> */}
           </div>
         </div>
 
