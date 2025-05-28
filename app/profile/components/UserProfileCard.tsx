@@ -1,20 +1,20 @@
 "use client";
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-// import { Button } from "@/components/ui/button"; // Button might not be needed if Share is removed and no other buttons remain
-// import { Share2 } from "lucide-react"; // Share2 icon not needed
-import { Switch } from "@/components/ui/switch"; // Assuming Switch component from shadcn/ui
-import { Label } from "@/components/ui/label";   // Assuming Label component from shadcn/ui
+import { Switch } from "@/components/ui/switch";
+import { Label } from "@/components/ui/label";
+import { Edit3, Award, Users, TrendingUp, MapPin, CalendarDays, Eye, EyeOff, BarChart3 } from "lucide-react";
+import { motion } from "framer-motion";
+import { Button } from "@/components/ui/button";
 
 interface UserProfileCardProps {
   avatarUrl?: string;
   username: string;
-  countryFlagSrc: string;
+  countryFlagSrc?: string;
   memberSince: string;
-  bio?: string;
-  // onShare: () => void; // Removed onShare prop
-  isAcceptingGamers: boolean; // New prop for toggle state
-  onAcceptingGamersChange: (isAccepting: boolean) => void; // New prop for toggle change handler
+  bio: string;
+  isAcceptingGamers: boolean;
+  onAcceptingGamersChange: (value: boolean) => void;
 }
 
 export const UserProfileCard = ({
@@ -30,65 +30,86 @@ export const UserProfileCard = ({
     return name ? name.charAt(0).toUpperCase() : "U";
   };
 
+  const stats = [
+    { label: "Rating", value: "4.8", icon: Award },
+    { label: "Hosted", value: "127", icon: TrendingUp },
+    { label: "Friends", value: "43", icon: Users }, // Example: replace with actual friend count
+  ];
+
   return (
-    <div className="backdrop-blur-sm bg-white/30 dark:bg-gray-800/30 rounded-xl p-6 border border-gray-200/50 dark:border-gray-700/50">
-      <div className="relative">
-        <div className="absolute inset-0 bg-gradient-to-b from-orange-500/20 to-transparent rounded-t-xl -mt-6 -mx-6 h-24" />
-        <Avatar className="relative h-32 w-32 mx-auto mb-4 ring-4 ring-white dark:ring-gray-700 ring-offset-2 ring-offset-gray-100 dark:ring-offset-gray-800">
-          <AvatarImage src={avatarUrl} alt={`${username}'s avatar`} className="object-cover" />
-          <AvatarFallback className="text-4xl bg-gradient-to-br from-orange-500 to-orange-600 text-white">
-            {getAvatarFallbackText(username)}
-          </AvatarFallback>
-        </Avatar>
-      </div>
-      
-      <div className="text-center space-y-2">
-        <div className="flex items-center justify-center space-x-2">
-          <h2 className="text-2xl font-bold text-gray-900 dark:text-white">{username}</h2>
-          <img src={countryFlagSrc} alt="Country flag" className="w-6 h-auto rounded-sm shadow-sm" />
+    <motion.div 
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.5, ease: "easeInOut" }}
+      className="bg-white dark:bg-slate-800/40 backdrop-blur-md rounded-xl border border-gray-200 dark:border-slate-700/80 shadow-lg dark:shadow-2xl p-6 space-y-6"
+    >
+      <div className="flex items-center justify-between">
+        <div className="flex items-center space-x-4">
+          <Avatar className="w-20 h-20 border-4 border-white dark:border-teal-500/70 shadow-md">
+            <AvatarImage src={avatarUrl} alt={username} />
+            <AvatarFallback className="bg-gray-200 dark:bg-slate-700 text-gray-600 dark:text-slate-300 text-2xl">
+              {username?.charAt(0).toUpperCase()}
+            </AvatarFallback>
+          </Avatar>
+          <div>
+            <h1 className="text-2xl font-bold text-gray-800 dark:text-white flex items-center">
+              {username}
+              {countryFlagSrc && (
+                <img src={countryFlagSrc} alt="Country flag" className="w-5 h-auto ml-2 rounded-sm" />
+              )}
+            </h1>
+            <div className="flex items-center text-xs text-gray-500 dark:text-slate-400 mt-1">
+              <CalendarDays size={14} className="mr-1.5" />
+              Member since {memberSince}
+            </div>
+          </div>
         </div>
-        <p className="text-sm text-gray-500 dark:text-gray-400">Member since {memberSince}</p>
-      </div>
-      
-      <div className="mt-6 p-4 bg-gradient-to-r from-gray-50/50 to-white/50 dark:from-gray-700/50 dark:to-gray-800/50 rounded-lg backdrop-blur-sm">
-        <div className="flex items-center justify-between space-x-3">
-          <Label htmlFor="accepting-gamers-toggle" className="text-sm font-medium text-gray-700 dark:text-gray-300">
-            Accepting Gamers
-          </Label>
-          <Switch 
-            id="accepting-gamers-toggle" 
-            checked={isAcceptingGamers}
-            onCheckedChange={onAcceptingGamersChange}
-            className="data-[state=checked]:bg-orange-500"
-          />
-        </div>
-        <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-          {isAcceptingGamers ? "You're visible to other gamers" : "You're currently not accepting games"}
-        </p>
+        <Button variant="ghost" size="icon" className="text-gray-500 hover:text-pink-600 dark:text-slate-400 dark:hover:text-teal-400">
+          <Edit3 size={18} />
+        </Button>
       </div>
 
-      {bio && (
-        <div className="mt-6 p-4 bg-gradient-to-r from-gray-50/50 to-white/50 dark:from-gray-700/50 dark:to-gray-800/50 rounded-lg backdrop-blur-sm">
-          <p className="text-sm text-gray-700 dark:text-gray-300 whitespace-pre-line">
-            {bio}
-          </p>
+      <div className="grid grid-cols-3 gap-2 text-center pt-2 pb-4 border-t border-b border-gray-200 dark:border-slate-700/60">
+        <div>
+          <Award size={20} className="mx-auto mb-1 text-purple-600 dark:text-teal-400" />
+          <p className="text-sm font-semibold text-gray-700 dark:text-slate-200">4.8</p>
+          <p className="text-xs text-gray-500 dark:text-slate-400">Rating</p>
         </div>
-      )}
-      
-      <div className="mt-6 grid grid-cols-3 gap-4 p-4 bg-gradient-to-r from-gray-50/50 to-white/50 dark:from-gray-700/50 dark:to-gray-800/50 rounded-lg backdrop-blur-sm">
-        <div className="text-center">
-          <p className="text-2xl font-bold text-orange-500 dark:text-orange-400">4.8</p>
-          <p className="text-xs text-gray-600 dark:text-gray-400">Rating</p>
+        <div>
+          <BarChart3 size={20} className="mx-auto mb-1 text-purple-600 dark:text-teal-400" />
+          <p className="text-sm font-semibold text-gray-700 dark:text-slate-200">127</p>
+          <p className="text-xs text-gray-500 dark:text-slate-400">Hosted</p>
         </div>
-        <div className="text-center border-x border-gray-200 dark:border-gray-700">
-          <p className="text-2xl font-bold text-orange-500 dark:text-orange-400">127</p>
-          <p className="text-xs text-gray-600 dark:text-gray-400">Hosted</p>
-        </div>
-        <div className="text-center">
-          <p className="text-2xl font-bold text-orange-500 dark:text-orange-400">89%</p>
-          <p className="text-xs text-gray-600 dark:text-gray-400">Success</p>
+        <div>
+          <Users size={20} className="mx-auto mb-1 text-purple-600 dark:text-teal-400" />
+          <p className="text-sm font-semibold text-gray-700 dark:text-slate-200">43</p>
+          <p className="text-xs text-gray-500 dark:text-slate-400">Friends</p>
         </div>
       </div>
-    </div>
+
+      <div>
+        <h3 className="text-xs font-semibold text-gray-500 dark:text-slate-400 uppercase tracking-wider mb-1.5">Bio</h3>
+        <p className="text-sm text-gray-600 dark:text-slate-300 leading-relaxed">{bio}</p>
+      </div>
+      
+      <div className="border-t border-gray-200 dark:border-slate-700/60 pt-6">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center">
+            {isAcceptingGamers ? <Eye size={18} className="mr-2 text-green-500" /> : <EyeOff size={18} className="mr-2 text-gray-500 dark:text-slate-500" />}
+            <div>
+              <span className="text-sm font-medium text-gray-700 dark:text-slate-200">Accepting Gamers</span>
+              <p className="text-xs text-gray-500 dark:text-slate-400">
+                {isAcceptingGamers ? "Visible and open to game invites" : "Not accepting game invites currently"}
+              </p>
+            </div>
+          </div>
+          <Switch
+            checked={isAcceptingGamers}
+            onCheckedChange={onAcceptingGamersChange}
+            className="data-[state=checked]:bg-purple-600 dark:data-[state=checked]:bg-teal-500 data-[state=unchecked]:bg-gray-300 dark:data-[state=unchecked]:bg-slate-600"
+          />
+        </div>
+      </div>
+    </motion.div>
   );
 }; 

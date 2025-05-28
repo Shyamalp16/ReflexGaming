@@ -43,27 +43,46 @@ export default function DashboardPage() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
-          className="space-y-4"
+          className="space-y-4 w-full max-w-6xl mx-auto"
         >
-          <h1 className="text-4xl font-bold gradient-text">
-            Welcome to Your Dashboard, {user.email ? user.email.split('@')[0] : 'User'}!
+          <h1 className="text-4xl sm:text-5xl font-extrabold gradient-text text-center">
+            Welcome, {user.email ? user.email.split('@')[0] : 'Gamer'}!
           </h1>
-          <p className="text-muted-foreground">
-            This is your personalized space. More features coming soon!
+          <p className="text-muted-foreground text-center max-w-2xl mx-auto">
+            Here's a quick overview of your activity on Reflex Cloud Gaming.
           </p>
-          <div className="bg-card p-6 rounded-lg shadow-md border border-border max-w-lg mx-auto">
-            <h2 className="text-2xl font-semibold mb-3">Temporary User Data:</h2>
-            <p className="text-left">
-              <span className="font-medium">User ID:</span> {user.id}
-            </p>
-            <p className="text-left">
-              <span className="font-medium">Email:</span> {user.email}
-            </p>
-            <p className="text-left">
-              <span className="font-medium">Last Sign In:</span> 
-              {user.last_sign_in_at ? new Date(user.last_sign_in_at).toLocaleString() : 'N/A'}
-            </p>
-            {/* Add more temporary data as needed */}
+
+          {/* Metrics Grid */}
+          <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 pt-4">
+            {/* Sessions Hosted */}
+            <div className="backdrop-blur-sm bg-white/30 dark:bg-gray-800/30 rounded-xl p-6 border border-gray-200/50 dark:border-gray-700/50 flex flex-col items-center card-hover">
+              <span className="text-3xl font-bold text-teal-500">12</span>
+              <span className="text-sm text-muted-foreground mt-2">Sessions Hosted</span>
+            </div>
+
+            {/* Games Played */}
+            <div className="backdrop-blur-sm bg-white/30 dark:bg-gray-800/30 rounded-xl p-6 border border-gray-200/50 dark:border-gray-700/50 flex flex-col items-center card-hover">
+              <span className="text-3xl font-bold text-orange-500">37</span>
+              <span className="text-sm text-muted-foreground mt-2">Games Played</span>
+            </div>
+
+            {/* Friends */}
+            <div className="backdrop-blur-sm bg-white/30 dark:bg-gray-800/30 rounded-xl p-6 border border-gray-200/50 dark:border-gray-700/50 flex flex-col items-center card-hover">
+              <span className="text-3xl font-bold text-teal-500">43</span>
+              <span className="text-sm text-muted-foreground mt-2">Friends</span>
+            </div>
+
+            {/* Wallet Balance */}
+            <div className="backdrop-blur-sm bg-white/30 dark:bg-gray-800/30 rounded-xl p-6 border border-gray-200/50 dark:border-gray-700/50 flex flex-col items-center card-hover">
+              <span className="text-3xl font-bold text-orange-500">$0.00</span>
+              <span className="text-sm text-muted-foreground mt-2">Wallet Balance</span>
+            </div>
+          </section>
+
+          {/* Placeholder for future content */}
+          <div className="backdrop-blur-sm bg-white/30 dark:bg-gray-800/30 rounded-xl p-8 border border-gray-200/50 dark:border-gray-700/50 mt-8 card-hover">
+            <h2 className="text-2xl font-semibold mb-2 text-center">Coming Soon</h2>
+            <p className="text-muted-foreground text-center">Detailed analytics, achievements, and personalized recommendations will appear here.</p>
           </div>
         </motion.div>
       </main>

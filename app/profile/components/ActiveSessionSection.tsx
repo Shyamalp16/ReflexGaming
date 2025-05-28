@@ -1,171 +1,205 @@
 "use client";
 
-import { useState, useEffect } from 'react'; // For placeholder state AND dynamic duration
-import { Zap, /* Users, */ Gamepad2, Clock, Wallet, TrendingUp, TrendingDown } from 'lucide-react'; // Removed Users icon
-// import { Button } from '@/components/ui/button'; // Assuming Button component
+import { useState, useEffect } from 'react';
+import { Zap, Gamepad2, Clock, DollarSign, Users, Tv, Info, Play, StopCircle, AlertTriangle, ExternalLink, PlusCircle, Settings2 } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Button } from '@/components/ui/button';
+import { Badge } from "@/components/ui/badge";
 
-// Placeholder types - replace with your actual data structures
 interface ActiveHostingSession {
   gameName: string;
-  // connectedGamers: number; // Removed
-  // maxGamers: number; // Removed
-  startTime: number; // Timestamp (e.g., Date.now()) or a pre-calculated elapsed seconds
+  startTime: number;
   currentEarnings: number;
+  maxEarningsPotential?: number; // Optional: for a progress bar or projection
+  statusMessage?: string; // e.g., "Broadcasting to 75 viewers"
 }
 
 interface ActivePlayingSession {
   gameName: string;
-  startTime: number; // Timestamp (e.g., Date.now()) or a pre-calculated elapsed seconds
+  startTime: number;
   currentSpend: number;
+  sessionGoal?: string; // e.g., "Complete 'The Heist' mission"
 }
 
+// Mock data - replace with actual data source
+const currentSessionData = {
+  isActive: true,
+  isHosting: true,
+  game: "Dust2 Pro League - Advanced Tournament",
+  gameImage: "/images/placeholder/d2-pro.jpg", // Placeholder image
+  viewers: 75,
+  sessionStartTime: new Date(Date.now() - 2 * 60 * 60 * 1000 - 15 * 60 * 1000 - 30 * 1000).toISOString(), // 2h 15m 30s ago
+  currentEarnings: 125.50,
+  currentSpend: 0, // Example, would be >0 if playing
+  serverLocation: "Frankfurt, Germany",
+  serverPing: "25ms",
+};
+
+// Helper to format duration
+const formatDuration = (startTime?: string) => {
+  if (!startTime) return "00:00:00";
+  const now = new Date();
+  const start = new Date(startTime);
+  let durationSeconds = Math.floor((now.getTime() - start.getTime()) / 1000);
+
+  if (durationSeconds < 0) durationSeconds = 0; // Ensure no negative duration
+
+  const hours = Math.floor(durationSeconds / 3600);
+  durationSeconds %= 3600;
+  const minutes = Math.floor(durationSeconds / 60);
+  const seconds = durationSeconds % 60;
+
+  return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+};
+
+interface DetailItemProps {
+  icon: React.ElementType;
+  label: string;
+  value: string | number;
+  iconColor?: string;
+  valueColor?: string;
+  isCurrency?: boolean;
+}
+
+const DetailItem: React.FC<DetailItemProps> = ({ icon: Icon, label, value, iconColor = "text-purple-500 dark:text-teal-400", valueColor = "text-gray-800 dark:text-white", isCurrency }) => (
+  <div className="bg-gray-50 dark:bg-slate-700/30 p-4 rounded-lg shadow-sm border border-gray-200 dark:border-slate-600/50 flex items-start space-x-3 transition-all hover:shadow-md hover:border-gray-300 dark:hover:border-slate-500">
+    <div className={`p-2 bg-purple-100 dark:bg-slate-600/50 rounded-md mt-0.5 ${iconColor.replace("text-", "bg-").replace("dark:text-", "dark:bg-")}/20`}>
+      <Icon size={18} className={iconColor} />
+    </div>
+    <div>
+      <p className="text-xs text-gray-500 dark:text-slate-400 font-medium">{label}</p>
+      <p className={`text-lg font-semibold ${valueColor}`}>
+        {isCurrency && typeof value === 'number' ? `$${value.toFixed(2)}` : value}
+      </p>
+    </div>
+  </div>
+);
+
 export const ActiveSessionSection = () => {
-  const [sessionType, setSessionType] = useState<'hosting' | 'playing' | null>('hosting');
-  const [walletBalance, setWalletBalance] = useState(125.50);
-  const [elapsedSeconds, setElapsedSeconds] = useState(0);
-
-  // --- Placeholder Initial Session Data (replace with actual fetched data) ---
-  // For a real scenario, startTime would come from your backend or be set when a session begins.
-  // Example: set to 2 hours 15 minutes and 30 seconds ago for hosting
-  const initialHostingStartTime = Date.now() - (2 * 60 * 60 * 1000) - (15 * 60 * 1000) - (30 * 1000);
-  // Example: set to 45 minutes and 10 seconds ago for playing
-  const initialPlayingStartTime = Date.now() - (45 * 60 * 1000) - (10 * 1000);
-
-
-  const activeHostingSession: ActiveHostingSession | null = sessionType === 'hosting' ? {
-    gameName: "Dust2 Pro League - Advanced Tournament Semi Finals with a Very Long Name That Might Overflow",
-    startTime: initialHostingStartTime,
-    currentEarnings: 25.75,
-  } : null;
-
-  const activePlayingSession: ActivePlayingSession | null = sessionType === 'playing' ? {
-    gameName: "Cyberpunk 2077 - Exploring Night City's Deepest Secrets and Long Quests",
-    startTime: initialPlayingStartTime,
-    currentSpend: 3.50,
-  } : null;
-  // --- End Placeholder State ---
+  const [session, setSession] = useState(currentSessionData);
+  const [duration, setDuration] = useState(formatDuration(session?.sessionStartTime));
 
   useEffect(() => {
-    let interval: NodeJS.Timeout | undefined;
-    let currentStartTime: number | undefined;
-
-    if (sessionType === 'hosting' && activeHostingSession) {
-      currentStartTime = activeHostingSession.startTime;
-    } else if (sessionType === 'playing' && activePlayingSession) {
-      currentStartTime = activePlayingSession.startTime;
-    }
-
-    if (currentStartTime) {
-      // Calculate initial elapsed seconds
-      const initialElapsed = Math.floor((Date.now() - currentStartTime) / 1000);
-      setElapsedSeconds(initialElapsed);
-
-      interval = setInterval(() => {
-        setElapsedSeconds(prevSeconds => prevSeconds + 1);
+    if (session?.isActive && session?.sessionStartTime) {
+      const interval = setInterval(() => {
+        setDuration(formatDuration(session.sessionStartTime));
       }, 1000);
-    } else {
-      setElapsedSeconds(0); // Reset if no active session
+      return () => clearInterval(interval);
     }
+  }, [session]);
 
-    return () => {
-      if (interval) clearInterval(interval);
-    };
-  }, [sessionType, activeHostingSession, activePlayingSession]);
-
-  const formatDuration = (totalSeconds: number) => {
-    const hours = Math.floor(totalSeconds / 3600);
-    const minutes = Math.floor((totalSeconds % 3600) / 60);
-    // const seconds = totalSeconds % 60; // Seconds removed from display
-
-    let formatted = "";
-    if (hours > 0) {
-      formatted += `${hours} hr `;
-    }
-    formatted += `${minutes} min`;
-    return formatted.trim();
+  const cardVariants = {
+    initial: { opacity: 0, y: 30, scale: 0.98 },
+    animate: { opacity: 1, y: 0, scale: 1, transition: { duration: 0.5, ease: [0.25, 1, 0.5, 1] } },
+    exit: { opacity: 0, y: -30, scale: 0.98, transition: { duration: 0.3, ease: [0.5, 0, 0.75, 0] } }
   };
+
+  const headerBg = session?.isHosting 
+    ? "bg-gradient-to-br from-purple-600 via-pink-500 to-rose-600 dark:from-teal-500 dark:via-cyan-500 dark:to-sky-600"
+    : "bg-gradient-to-br from-indigo-600 via-purple-500 to-pink-600 dark:from-purple-500 dark:via-pink-500 dark:to-rose-600";
   
-  const currentDuration = formatDuration(elapsedSeconds);
-
-  if (!sessionType) {
-    return null;
-  }
-
-  const SummaryIcon = sessionType === 'hosting' ? TrendingUp : TrendingDown;
-  const summaryTitle = sessionType === 'hosting' ? "Quick Earnings" : "Spending Summary";
-  const summaryValue = sessionType === 'hosting' 
-    ? `$${activeHostingSession?.currentEarnings.toFixed(2)}` 
-    : `$${activePlayingSession?.currentSpend.toFixed(2)}`;
+  const headerIconColor = session?.isHosting ? "text-white" : "text-white";
+  const accentColor = session?.isHosting ? "pink" : "purple";
+  const iconColor = session?.isHosting ? "text-pink-500 dark:text-teal-400" : "text-purple-500 dark:text-pink-400";
+  const valueColor = session?.isHosting ? "text-gray-800 dark:text-white" : "text-gray-800 dark:text-white";
 
   return (
-    <div className="mb-8 bg-gradient-to-r from-orange-500 via-red-500 to-pink-500 p-1 rounded-xl shadow-2xl">
-      <div className="bg-white dark:bg-gray-800 p-6 rounded-lg">
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6">
-          <div className="mb-4 md:mb-0 min-w-0"> {/* Added min-w-0 for flex child truncation */}
-            <h2 className="text-3xl font-bold text-gray-900 dark:text-white flex items-center truncate">
-              <Zap size={32} className="mr-3 text-yellow-400 flex-shrink-0" /> 
-              <span className="truncate">Active Session</span>
+    <AnimatePresence mode="wait">
+      <motion.div
+        key={session?.isActive ? "active" : "inactive"}
+        variants={cardVariants}
+        initial="initial"
+        animate="animate"
+        exit="exit"
+        className="bg-white dark:bg-slate-800/60 backdrop-blur-lg rounded-xl border border-gray-200 dark:border-slate-700/80 shadow-xl dark:shadow-2xl overflow-hidden"
+      >
+        {session?.isActive ? (
+          <>
+            <div className={`p-6 ${headerBg} text-white`}>
+              <div className="flex justify-between items-start mb-3">
+                <div>
+                  <h2 className="text-2xl sm:text-3xl font-bold flex items-center">
+                    <Zap size={28} className={`mr-3 ${headerIconColor} transform -rotate-12`} />
+                    Active {session.isHosting ? "Hosting" : "Gaming"} Session
             </h2>
-            {sessionType === 'hosting' && activeHostingSession && (
-              <p className="text-gray-600 dark:text-gray-400 text-lg truncate">You are currently hosting: <span className='text-orange-500 dark:text-orange-400 font-semibold truncate'>{activeHostingSession.gameName}</span></p>
-            )}
-            {sessionType === 'playing' && activePlayingSession && (
-              <p className="text-gray-600 dark:text-gray-400 text-lg truncate">You are currently playing: <span className='text-sky-500 dark:text-sky-400 font-semibold truncate'>{activePlayingSession.gameName}</span></p>
-            )}
-          </div>
-          <div className="flex items-center bg-gray-100 dark:bg-gray-700 px-4 py-2 rounded-lg shadow mt-4 md:mt-0 flex-shrink-0">
-            <Wallet size={20} className="mr-2 text-green-500 dark:text-green-400" />
-            <span className="text-gray-900 dark:text-white text-xl font-semibold">${walletBalance.toFixed(2)}</span>
-          </div>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 text-gray-900 dark:text-white"> {/* Changed text color default */}
-          {/* Session Game Details */} 
-          {sessionType === 'hosting' && activeHostingSession && (
-            <div className="bg-gray-100/70 dark:bg-gray-700/70 p-4 rounded-lg flex items-center space-x-3 min-w-0">
-              <Gamepad2 size={28} className="text-purple-500 dark:text-purple-400 flex-shrink-0" />
-              <div className="min-w-0">
-                <p className="text-sm text-gray-500 dark:text-gray-400">GAME</p>
-                <p className="text-lg font-semibold truncate">{activeHostingSession.gameName}</p>
+                  <p className="text-sm opacity-80 mt-1">
+                    {session.isHosting ? `Broadcasting to ${session.viewers} viewers on ReflexTV` : `Playing ${session.game}`}
+                  </p>
+                </div>
+                {session.isHosting && session.currentEarnings > 0 && (
+                  <Badge variant="outline" className="bg-white/20 dark:bg-black/20 border-none text-white text-sm font-semibold py-1.5 px-3 backdrop-blur-sm">
+                    <DollarSign size={16} className="mr-1.5 text-green-300" />
+                    {`$${session.currentEarnings.toFixed(2)}`}
+                  </Badge>
+                )}
+                {!session.isHosting && session.currentSpend > 0 && (
+                  <Badge variant="outline" className="bg-white/20 dark:bg-black/20 border-none text-white text-sm font-semibold py-1.5 px-3 backdrop-blur-sm">
+                    <DollarSign size={16} className="mr-1.5 text-red-300" />
+                    {`-$${session.currentSpend.toFixed(2)}`}
+                  </Badge>
+                )}
               </div>
             </div>
-          )}
-          {sessionType === 'playing' && activePlayingSession && (
-             <div className="bg-gray-100/70 dark:bg-gray-700/70 p-4 rounded-lg flex items-center space-x-3 min-w-0">
-                <Gamepad2 size={28} className="text-sky-500 dark:text-sky-400 flex-shrink-0" />
-                <div className="min-w-0">
-                  <p className="text-sm text-gray-500 dark:text-gray-400">CURRENTLY PLAYING</p>
-                  <p className="text-lg font-semibold truncate">{activePlayingSession.gameName}</p>
-                </div>
+
+            <div className="p-6 space-y-6">
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+                <DetailItem icon={Gamepad2} label={session.isHosting ? "Hosting Game" : "Playing Game"} value={session.game} iconColor={iconColor} valueColor={valueColor} />
+                <DetailItem icon={Clock} label="Session Duration" value={duration} iconColor={iconColor} valueColor={valueColor} />
+                {session.isHosting ? (
+                  <DetailItem icon={DollarSign} label="Current Earnings" value={session.currentEarnings} iconColor="text-green-500" valueColor="text-green-600 dark:text-green-400" isCurrency />
+                ) : (
+                  <DetailItem icon={DollarSign} label="Current Spend" value={session.currentSpend} iconColor="text-red-500" valueColor="text-red-600 dark:text-red-400" isCurrency />
+                )}
+              </div>
+              
+              {session.isHosting && (
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 pt-4 border-t border-gray-200 dark:border-slate-700/50">
+                    <DetailItem icon={Tv} label="Viewers" value={session.viewers} iconColor={iconColor} valueColor={valueColor} />
+                    <DetailItem icon={AlertTriangle} label="Server Ping" value={session.serverPing} iconColor={iconColor} valueColor={valueColor} />
+                    <DetailItem icon={ExternalLink} label="Location" value={session.serverLocation} iconColor={iconColor} valueColor={valueColor}/>
               </div>
           )}
           
-          {/* GAMERS CONNECTED SECTION REMOVED */}
-
-          {/* Duration */} 
-          <div className="bg-gray-100/70 dark:bg-gray-700/70 p-4 rounded-lg flex items-center space-x-3">
-            <Clock size={28} className="text-blue-500 dark:text-blue-400 flex-shrink-0" />
-            <div>
-              <p className="text-sm text-gray-500 dark:text-gray-400">SESSION DURATION</p>
-              <p className="text-lg font-semibold">
-                {currentDuration}
-              </p>
-            </div>
-          </div>
-
-          {/* Quick Summary (Earnings/Spendings) */}
-          {(activeHostingSession || activePlayingSession) && (
-             <div className="bg-gray-100/70 dark:bg-gray-700/70 p-4 rounded-lg flex items-center space-x-3 md:col-span-2">
-              <SummaryIcon size={28} className={`${sessionType === 'hosting' ? "text-green-500 dark:text-green-400" : "text-red-500 dark:text-red-400"} flex-shrink-0`} />
-              <div>
-                <p className="text-sm text-gray-500 dark:text-gray-400">{summaryTitle.toUpperCase()}</p>
-                <p className="text-lg font-semibold">{summaryValue}</p>
+              <div className="pt-6 border-t border-gray-200 dark:border-slate-700/50 flex flex-col sm:flex-row gap-3 sm:justify-between items-center">
+                <Button 
+                  variant="outline"
+                  size="lg"
+                  className={`w-full sm:w-auto border-${accentColor}-500/70 text-${accentColor}-600 hover:bg-${accentColor}-100 hover:text-${accentColor}-700 dark:border-${session.isHosting ? 'teal' : 'pink'}-500/70 dark:text-${session.isHosting ? 'teal' : 'pink'}-400 dark:hover:bg-${session.isHosting ? 'teal' : 'pink'}-500/10 dark:hover:text-${session.isHosting ? 'teal' : 'pink'}-300 shadow-sm hover:shadow-md transition-all group`}
+                  onClick={() => console.log("Manage Session")}
+                >
+                  Manage {session.isHosting ? "Hosting" : "Gaming"} Session
+                  <Settings2 size={18} className="ml-2 group-hover:rotate-45 transition-transform"/>
+                </Button>
+                <Button 
+                  variant="destructive" 
+                  size="lg"
+                  className="w-full sm:w-auto group"
+                  onClick={() => setSession(prev => ({...prev, isActive: false}))}
+                 >
+                  <StopCircle size={18} className="mr-2 group-hover:scale-110 transition-transform"/>
+                  End Session
+                </Button>
               </div>
             </div>
+          </>
+        ) : (
+          <div className="p-8 sm:p-10 text-center bg-gray-50 dark:bg-slate-800/30">
+            <Info size={48} className="mx-auto mb-4 text-purple-500 dark:text-teal-400 opacity-70" />
+            <h3 className="text-xl font-semibold text-gray-700 dark:text-slate-200 mb-2">No Active Session</h3>
+            <p className="text-sm text-gray-500 dark:text-slate-400 mb-6 max-w-xs mx-auto">
+              You are not currently hosting or playing any game. Start a new session to see details here.
+            </p>
+            <Button 
+              size="lg"
+              className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 dark:from-teal-500 dark:to-cyan-500 dark:hover:from-teal-600 dark:hover:to-cyan-600 text-white shadow-lg hover:shadow-xl transform hover:scale-105 transition-all group"
+              onClick={() => console.log("Start Hosting clicked from empty state")}
+            >
+              <PlusCircle size={20} className="mr-2 group-hover:rotate-90 transition-transform"/>
+              Start Hosting Now
+            </Button>
+            </div>
           )}
-        </div>
-        
-      </div>
-    </div>
+      </motion.div>
+    </AnimatePresence>
   );
 }; 

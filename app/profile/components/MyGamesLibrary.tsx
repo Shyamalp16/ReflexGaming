@@ -1,45 +1,54 @@
 "use client";
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
-// import { ScrollArea } from "@/components/ui/scroll-area"; // ScrollArea removed
-import { Search } from 'lucide-react';
+import { Search, Gamepad2, Library, Star, Settings2 } from 'lucide-react';
+import { motion } from 'framer-motion';
 
 interface GameEntry {
   id: string;
   name: string;
   isHostEnabled: boolean;
+  platform: string;
+  isActive: boolean;
+  coverArt: string;
 }
 
 // Placeholder game data - replace with actual data source and fetching
 const ALL_AVAILABLE_GAMES: GameEntry[] = Array.from({ length: 15 }, (_, i) => ({
   id: `game-${i + 1}`,
-  name: `Awesome Game Title ${i + 1}`,
+  name: `Awesome Game Title ${i + 1} With A Potentially Long Name That Needs Ellipsis`,
   isHostEnabled: i < 3, // Make first 3 enabled by default for example
+  platform: 'PC',
+  isActive: true,
+  coverArt: '/images/placeholder/cyberpunk.jpg',
 }));
 
 export const MyGamesLibrary = () => {
   const [searchTerm, setSearchTerm] = useState("");
-  const [userGames, setUserGames] = useState<GameEntry[]>(ALL_AVAILABLE_GAMES); // This represents the user's full library
+  const [games, setGames] = useState<GameEntry[]>(ALL_AVAILABLE_GAMES.slice(0, 3)); // Show top 3 initially
+  const [showAll, setShowAll] = useState(false); // Not used currently, but could be for a "View All" button
 
   const filteredGames = useMemo(() => {
     if (!searchTerm) {
       // If no search term, userGames is the source (could be their full library or a pre-filtered list)
-      return userGames;
+      return ALL_AVAILABLE_GAMES;
     }
     // If there is a search term, filter from the user's games
-    return userGames.filter(game => 
+    return ALL_AVAILABLE_GAMES.filter(game => 
       game.name.toLowerCase().includes(searchTerm.toLowerCase())
     );
-  }, [userGames, searchTerm]);
+  }, [ALL_AVAILABLE_GAMES, searchTerm]);
 
-  // Always display up to 3 games from the (potentially filtered) list
-  const displayedGames = filteredGames.slice(0, 3);
+  // Effect to update displayed games when filter changes, still respecting the top 3 limit
+  useEffect(() => {
+    setGames(filteredGames.slice(0,3));
+  }, [filteredGames]);
 
   const handleToggleHostEnabled = (gameId: string, isEnabled: boolean) => {
-    setUserGames(prevGames => 
+    setGames(prevGames => 
       prevGames.map(game => 
         game.id === gameId ? { ...game, isHostEnabled: isEnabled } : game
       )
@@ -48,52 +57,91 @@ export const MyGamesLibrary = () => {
     console.log(`Game ${gameId} hosting ${isEnabled ? 'enabled' : 'disabled'}`);
   };
 
+  const toggleGameActive = (id: string) => {
+    // This would typically update backend state
+    // For demo, just updating local state temporarily
+    const updatedGames = ALL_AVAILABLE_GAMES.map(g => g.id === id ? { ...g, isActive: !g.isActive } : g);
+    // Note: This local update to `ALL_AVAILABLE_GAMES` won't persist or reflect globally unless `ALL_AVAILABLE_GAMES` is managed by a higher state or context.
+    // To see the change reflected in the displayed list, you might need to re-filter/re-slice from the updated `ALL_AVAILABLE_GAMES`.
+    // For simplicity, this example won't immediately show the toggle change. 
+    // A more robust solution would involve updating the source `ALL_AVAILABLE_GAMES` state or re-fetching.
+    console.log(`Toggled game ${id}`);
+  };
+
+  const cardVariants = {
+    hidden: { opacity: 0, y: 20 },
+    visible: { opacity: 1, y: 0, transition: { duration: 0.5, ease: "easeInOut", delay: 0.1 } },
+  };
+
+  const listItemVariants = {
+    hidden: { opacity: 0, x: -20 },
+    visible: (i: number) => ({
+      opacity: 1,
+      x: 0,
+      transition: { delay: i * 0.08, duration: 0.3, ease: "easeOut" },
+    }),
+  };
+
   return (
-    <div className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow-md space-y-4">
-      <h3 className="text-lg font-semibold text-gray-900 dark:text-white">My Games Library</h3>
-      <div className="relative">
-        <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-500 dark:text-gray-400" />
+    <motion.div 
+      variants={cardVariants}
+      initial="hidden"
+      animate="visible"
+      className="bg-white dark:bg-slate-800/40 backdrop-blur-md rounded-xl border border-gray-200 dark:border-slate-700/80 shadow-lg dark:shadow-2xl p-6"
+    >
+      <div className="flex items-center justify-between mb-5">
+        <h2 className="text-xl font-bold text-gray-800 dark:text-white flex items-center">
+          <Library size={22} className="mr-2.5 text-purple-600 dark:text-teal-400" />
+          My Games Library
+        </h2>
+        {/* Could add a settings/filter icon here */}
+        {/* <Settings2 size={18} className="text-slate-500 hover:text-teal-400 transition-colors cursor-pointer" /> */}
+      </div>
+
+      <div className="relative mb-5">
+        <Search size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 dark:text-slate-500" />
         <Input 
-          type="search"
-          placeholder="Search your games..."
+          type="text"
+          placeholder="Search games..."
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
-          className="pl-8 w-full bg-gray-50 dark:bg-gray-700 border-gray-300 dark:border-gray-600 focus:border-orange-500 dark:focus:border-orange-500"
+          className="w-full pl-10 pr-4 py-2.5 text-sm bg-gray-50 dark:bg-slate-700/50 border-gray-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-purple-500 dark:focus:ring-teal-500 focus:border-purple-500 dark:focus:border-teal-500 text-gray-700 dark:text-slate-200 placeholder-gray-400 dark:placeholder-slate-500"
         />
       </div>
-      
-      {/* Container for game entries, max 3 will be shown */} 
-      <div className="space-y-3 min-h-[150px]"> {/* Added min-height to prevent collapse when empty search */}
-        {displayedGames.length > 0 ? (
-          displayedGames.map(game => (
-            <div 
+
+      {games.length > 0 ? (
+        <div className="space-y-3 min-h-[210px]"> 
+          {games.map((game, index) => (
+            <motion.div 
               key={game.id} 
-              className="flex items-center justify-between p-3 bg-gray-100 dark:bg-gray-700/60 rounded-md hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
+              custom={index} 
+              variants={listItemVariants} 
+              initial="hidden"
+              animate="visible"
+              className="flex items-center justify-between p-3 bg-gray-50 dark:bg-slate-700/30 hover:bg-gray-100 dark:hover:bg-slate-700/60 rounded-lg border border-gray-200 dark:border-slate-600/50 transition-all duration-200 group"
             >
-              <Label htmlFor={`toggle-${game.id}`} className="text-sm font-medium text-gray-800 dark:text-gray-200 cursor-pointer truncate pr-2">
-                {game.name}
-              </Label>
+              <div className="flex items-center space-x-3 min-w-0">
+                <Gamepad2 size={20} className="text-purple-600 dark:text-teal-400 flex-shrink-0 group-hover:scale-110 transition-transform" />
+                <div className="min-w-0">
+                  <p className="text-sm font-medium text-gray-700 dark:text-slate-200 truncate group-hover:text-purple-600 dark:group-hover:text-teal-300">{game.name}</p>
+                  <p className="text-xs text-gray-500 dark:text-slate-400">{game.platform}</p>
+                </div>
+              </div>
               <Switch 
-                id={`toggle-${game.id}`}
                 checked={game.isHostEnabled}
                 onCheckedChange={(checked) => handleToggleHostEnabled(game.id, checked)}
-                aria-label={`Toggle hosting for ${game.name}`}
+                className="data-[state=checked]:bg-purple-600 dark:data-[state=checked]:bg-teal-500 data-[state=unchecked]:bg-gray-300 dark:data-[state=unchecked]:bg-slate-600 ml-2 flex-shrink-0"
               />
-            </div>
-          ))
-        ) : (
-          searchTerm ? (
-            <p className="text-sm text-gray-500 dark:text-gray-400 text-center py-4">
-              No games found matching "{searchTerm}".
-            </p>
-          ) : (
-            <p className="text-sm text-gray-500 dark:text-gray-400 text-center py-4">
-              Your game library is currently empty or no games match the initial view.
-            </p>
-          )
-        )}
-      </div>
-      {/* TODO: Add functionality/UI for adding games to this library if not automatically populated */}
-    </div>
+            </motion.div>
+          ))}
+        </div>
+      ) : (
+        <div className="text-center py-8 text-gray-500 dark:text-slate-500 min-h-[210px] flex flex-col justify-center items-center">
+          <Gamepad2 size={36} className="mb-3 opacity-50" />
+          <p className="text-sm">No games found matching your search.</p>
+        </div>
+      )}
+      {/* Removed "View All" button for now, as we only show top 3 */}
+    </motion.div>
   );
 }; 
