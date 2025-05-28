@@ -252,16 +252,6 @@ export const LastHostedSection = () => {
                           </div>
                         ))}
                     </div>
-
-                    <Button 
-                      className="mt-auto w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 dark:from-teal-500 dark:to-cyan-500 dark:hover:from-teal-600 dark:hover:to-cyan-600 text-white text-sm font-semibold shadow-md hover:shadow-lg transform hover:scale-105 transition-all group"
-                      onClick={() => game.sessionLink && router.push(game.sessionLink)} // Basic navigation for now
-                    >
-                        <span>
-                          View Session
-                          <ExternalLink size={14} className="ml-1.5 opacity-80 group-hover:opacity-100 transition-opacity"/>
-                        </span>
-                    </Button>
                   </div>
                 </div>
               </div>

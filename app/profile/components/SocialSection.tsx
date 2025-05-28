@@ -95,29 +95,30 @@ export const SocialSection = () => {
                     </div>
                   </div>
                   
-                  {/* Buttons removed from here */}
-                  {/* {link.connected && link.connectUrl ? (
-                     <Button asChild variant="ghost" size="sm" className="text-slate-400 hover:text-teal-400 hover:bg-slate-600/50 px-2.5 py-1 h-auto flex-shrink-0">
-                       <a href={link.connectUrl} target="_blank" rel="noopener noreferrer" aria-label={`View ${link.platform} profile`}>
-                         <ExternalLink size={18} />
-                       </a>
-                     </Button>
+                  {/* Buttons will be re-added here with new logic */}
+                  {link.connected ? (
+                    <Button 
+                      variant="ghost" 
+                      size="icon"
+                      onClick={() => console.log(`Disconnect ${link.platform}`)} 
+                      className="text-red-500 hover:text-red-700 dark:text-red-400 dark:hover:text-red-500 hover:bg-red-100 dark:hover:bg-red-500/10 flex-shrink-0 p-2 h-auto w-auto"
+                      aria-label={`Disconnect ${link.platform}`}
+                    >
+                      <XCircle size={28} />
+                    </Button>
                   ) : (
                     <Button 
                       onClick={link.onConnect} 
-                      variant={link.connected ? "outline" : "default"}
-                      size="sm"
-                      className={`relative transition-all duration-300 flex-shrink-0 whitespace-nowrap
-                        ${link.connected 
-                          ? 'border-green-500/70 text-green-400 hover:bg-green-500/10 hover:border-green-500 px-3' 
-                          : 'bg-gradient-to-r from-teal-500 to-cyan-500 hover:from-teal-600 hover:to-cyan-600 text-white border-none px-4 shadow-md hover:shadow-lg'
-                        }
-                      `}
+                      variant="outline"
+                      size="icon"
+                      className="text-purple-600 border-purple-500/70 hover:bg-purple-500/10 hover:border-purple-600 hover:text-purple-700 
+                                 dark:text-teal-400 dark:border-teal-500/70 dark:hover:bg-teal-500/10 dark:hover:border-teal-400 dark:hover:text-teal-300 
+                                 flex-shrink-0 p-2 h-auto w-auto"
+                      aria-label={`Connect ${link.platform}`}
                     >
-                      {link.connected ? <CheckCircle size={16} className="mr-1.5" /> : <Link2 size={16} className="mr-1.5" />}
-                      {link.connected ? "Manage" : "Connect"}
+                      <Link2 size={28} />
                     </Button>
-                  )} */}
+                  )}
                 </div>
               </motion.div>
             ))}

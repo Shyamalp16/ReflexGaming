@@ -224,15 +224,6 @@ export const LastPlayedSection = () => {
                           </div>
                         ))}
                     </div>
-
-                    <Button asChild className="mt-auto w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 dark:from-sky-500 dark:to-blue-500 dark:hover:from-sky-600 dark:hover:to-blue-600 text-white text-sm font-semibold shadow-md hover:shadow-lg transform hover:scale-105 transition-all group">
-                      <a href={game.gameHubLink}>
-                        <>
-                          Go to Game Hub
-                          <ExternalLink size={14} className="ml-1.5 opacity-80 group-hover:opacity-100 transition-opacity"/>
-                        </>
-                      </a>
-                    </Button>
                   </div>
                 </div>
               </div>
