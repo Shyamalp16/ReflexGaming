@@ -129,27 +129,49 @@ export const BillingsSection = () => {
 
       {/* Main content grid */}
       <div className="mt-6 grid grid-cols-1 md:grid-cols-2 gap-8">
-        {/* Left Column: Plan Features */}
-        <div className="md:pl-8 border-l border-gray-200 dark:border-gray-200/10">
-          <h4 className="text-sm font-medium text-gray-700 dark:text-white mb-4">Plan Features</h4>
-          <ul className="space-y-3">
-            {subscriptionData.features.map((feature, index) => (
-              <motion.li
-                key={index}
-                initial={{ opacity: 0, x: -20 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: index * 0.1 }}
-                whileHover={{ x: 5 }}
-                className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-300"
-              >
-                <Shield size={14} className="text-purple-500 dark:text-orange-500" />
-                {feature}
-              </motion.li>
-            ))}
-          </ul>
+        {/* Left Column: Plan Features, Pro Benefits, and Help Text */}
+        <div className="md:pl-8 border-l border-gray-200 dark:border-gray-200/10 space-y-6">
+          <div>
+            <h4 className="text-sm font-medium text-gray-700 dark:text-white mb-4">Plan Features</h4>
+            <ul className="space-y-3">
+              {subscriptionData.features.map((feature, index) => (
+                <motion.li
+                  key={index}
+                  initial={{ opacity: 0, x: -20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: index * 0.1 }}
+                  whileHover={{ x: 5 }}
+                  className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-300"
+                >
+                  <Shield size={14} className="text-purple-500 dark:text-orange-500" />
+                  {feature}
+                </motion.li>
+              ))}
+            </ul>
+          </div>
+
+          {/* Pro Benefits Card - Moved Here */}
+          <div className="bg-purple-500/5 dark:bg-orange-500/5 dark:dark:bg-orange-500/10 rounded-lg p-4 border border-purple-200/20 dark:border-orange-200/10 dark:dark:border-orange-700/10">
+            <div className="flex items-start gap-3">
+              <div className="p-2 bg-purple-500/10 dark:bg-orange-500/10 rounded-lg">
+                <Sparkles size={16} className="text-purple-500 dark:text-orange-500" />
+              </div>
+              <div>
+                <h4 className="text-sm font-medium text-gray-700 dark:text-gray-900 dark:dark:text-white">Pro Benefits</h4>
+                <p className="text-xs text-gray-600 dark:text-gray-400 mt-1">
+                  You're saving $5.99/month with annual billing. <button className="text-purple-600 hover:text-pink-600 dark:text-orange-500 dark:hover:text-orange-600 font-medium">Learn more</button>
+                </p>
+              </div>
+            </div>
+          </div>
+
+          {/* Need Help Text - Moved Here */}
+          <div className="text-xs text-center md:text-left text-gray-500 dark:text-gray-400 pt-2">
+            Need help? <button className="text-purple-600 hover:text-pink-600 dark:text-orange-500 dark:hover:text-orange-600">Contact support</button>
+          </div>
         </div>
 
-        {/* Right Column: Billing Summary, Buttons, and other info */}
+        {/* Right Column: Billing Summary, Buttons */}
         <div className="space-y-4">
           <div className="bg-gray-50 dark:bg-white/5 dark:dark:bg-gray-800/50 rounded-lg p-4 border border-gray-200 dark:border-gray-200/10 dark:dark:border-gray-700/10">
             <div className="space-y-3">
@@ -199,7 +221,8 @@ export const BillingsSection = () => {
             </motion.div>
           </div>
 
-          <div className="bg-purple-500/5 dark:bg-orange-500/5 dark:dark:bg-orange-500/10 rounded-lg p-4 border border-purple-200/20 dark:border-orange-200/10 dark:dark:border-orange-700/10">
+          {/* Pro Benefits Card - Original Position (Now Commented/Removed) */}
+          {/* <div className="bg-purple-500/5 dark:bg-orange-500/5 dark:dark:bg-orange-500/10 rounded-lg p-4 border border-purple-200/20 dark:border-orange-200/10 dark:dark:border-orange-700/10">
             <div className="flex items-start gap-3">
               <div className="p-2 bg-purple-500/10 dark:bg-orange-500/10 rounded-lg">
                 <Sparkles size={16} className="text-purple-500 dark:text-orange-500" />
@@ -211,11 +234,12 @@ export const BillingsSection = () => {
                 </p>
               </div>
             </div>
-          </div>
+          </div> */}
 
-          <div className="text-xs text-center text-gray-500 dark:text-gray-400">
+          {/* Need Help Text - Original Position (Now Commented/Removed) */}
+          {/* <div className="text-xs text-center text-gray-500 dark:text-gray-400">
             Need help? <button className="text-purple-600 hover:text-pink-600 dark:text-orange-500 dark:hover:text-orange-600">Contact support</button>
-          </div>
+          </div> */}
         </div>
       </div>
 

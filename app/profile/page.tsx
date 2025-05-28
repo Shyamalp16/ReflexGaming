@@ -126,17 +126,17 @@ export default function ProfilePage() {
 
           <section className="w-full lg:w-2/3">
             <Tabs defaultValue="overview" className="w-full">
-              <TabsList className="sticky top-0 z-10 grid w-full grid-cols-2 md:grid-cols-4 gap-1.5 bg-gray-100/80 dark:bg-slate-800/60 backdrop-blur-md p-1.5 rounded-lg mb-8 shadow-sm border border-gray-200 dark:border-slate-700">
-                <TabsTrigger value="overview" className="profile-tab-trigger">
+              <TabsList className="sticky top-0 z-10 flex w-full gap-1.5 bg-gray-100/80 dark:bg-slate-800/60 backdrop-blur-md p-1.5 rounded-lg mb-8 shadow-sm border border-gray-200 dark:border-slate-700">
+                <TabsTrigger value="overview" className="profile-tab-trigger w-full flex-1">
                   <LayoutGrid size={18} className="mr-0 md:mr-2" /> <span className="hidden md:inline">Overview</span>
                 </TabsTrigger>
-                <TabsTrigger value="stats" className="profile-tab-trigger">
+                <TabsTrigger value="stats" className="profile-tab-trigger w-full flex-1">
                   <BarChartHorizontalBig size={18} className="mr-0 md:mr-2" /> <span className="hidden md:inline">Stats</span>
                 </TabsTrigger>
-                <TabsTrigger value="hot_games" className="profile-tab-trigger">
+                <TabsTrigger value="hot_games" className="profile-tab-trigger w-full flex-1">
                   <Flame size={18} className="mr-0 md:mr-2" /> <span className="hidden md:inline">Hot Games</span>
                 </TabsTrigger>
-                <TabsTrigger value="billing" className="profile-tab-trigger">
+                <TabsTrigger value="billing" className="profile-tab-trigger w-full flex-1">
                   <CreditCard size={18} className="mr-0 md:mr-2" /> <span className="hidden md:inline">Billing</span>
                 </TabsTrigger>
               </TabsList>
@@ -170,11 +170,11 @@ export default function ProfilePage() {
                   className="bg-white dark:bg-slate-800/40 backdrop-blur-md rounded-xl border border-gray-200 dark:border-slate-700/80 shadow-xl dark:shadow-2xl p-6 md:p-8"
                 >
                   <Tabs defaultValue="hosting-stats" className="w-full">
-                    <TabsList className="grid w-full grid-cols-1 sm:grid-cols-2 gap-2 bg-gray-100 dark:bg-slate-700/60 p-1.5 rounded-lg mb-6 border border-gray-200 dark:border-slate-600/80">
-                      <TabsTrigger value="hosting-stats" className="profile-nested-tab-trigger">
+                    <TabsList className="flex w-full bg-gray-100 dark:bg-slate-700/60 p-1.5 rounded-lg mb-6 border border-gray-200 dark:border-slate-600/80 gap-1.5">
+                      <TabsTrigger value="hosting-stats" className="profile-nested-tab-trigger w-full flex-1">
                         <RadioTower size={18} className="mr-2" /> Hosting Stats
                       </TabsTrigger>
-                      <TabsTrigger value="player-stats" className="profile-nested-tab-trigger">
+                      <TabsTrigger value="player-stats" className="profile-nested-tab-trigger w-full flex-1">
                         <Gamepad2 size={18} className="mr-2" /> Player Stats
                       </TabsTrigger>
                     </TabsList>
