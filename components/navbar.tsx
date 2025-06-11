@@ -74,7 +74,7 @@ export function Navbar() {
     if (isProd) {
       return (
         <AnimatedButton variant="accent" asChild>
-          <Link href="/wishlist">Join Waitlist</Link>
+          <Link href="/waitlist">Join Waitlist</Link>
         </AnimatedButton>
       );
     }
