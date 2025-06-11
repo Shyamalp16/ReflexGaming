@@ -21,7 +21,7 @@ interface WishlistFormData {
   additional_message: string;
 }
 
-export default function WishlistPage() {
+export default function WaitlistPage() {
   const { toast } = useToast();
   const [formData, setFormData] = useState<WishlistFormData>({
     full_name: '',
@@ -44,7 +44,7 @@ export default function WishlistPage() {
     onSuccess: () => {
       toast({
         title: "Successfully Joined! 🎮",
-        description: "Thanks for joining our wishlist! We'll keep you updated on all the exciting developments.",
+        description: "Thanks for joining our waitlist! We'll keep you updated on all the exciting developments.",
         variant: "default",
         duration: 3000,
       });
@@ -59,7 +59,7 @@ export default function WishlistPage() {
       });
     },
     onError: (error: Error) => {
-      console.error('Wishlist submission error:', error);
+      console.error('Waitlist submission error:', error);
       toast({
         title: "Submission Failed",
         description: error.message || "Could not submit your information. Please try again.",
@@ -96,10 +96,10 @@ export default function WishlistPage() {
             <CardHeader>
               <div className="flex items-center gap-2">
                 <Sparkles className="h-6 w-6 text-primary" />
-                <CardTitle className="text-2xl">Join Our Wishlist</CardTitle>
+                <CardTitle className="text-2xl">Join Our Waitlist</CardTitle>
               </div>
               <CardDescription>
-                Be among the first to experience Reflex Cloud Gaming. Fill out this form to join our exclusive wishlist.
+                Be among the first to experience Reflex Cloud Gaming. Fill out this form to join our exclusive waitlist.
               </CardDescription>
             </CardHeader>
             <CardContent>
@@ -177,7 +177,7 @@ export default function WishlistPage() {
                       Submitting...
                     </>
                   ) : (
-                    "Join Wishlist"
+                    "Join Waitlist"
                   )}
                 </Button>
 

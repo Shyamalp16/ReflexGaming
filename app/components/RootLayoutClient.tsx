@@ -18,8 +18,8 @@ export function RootLayoutClient({
   useEffect(() => {
     // Only apply redirects in production mode
     if (process.env.NODE_ENV === 'production') {
-      // Allow homepage, coming-soon, and wishlist pages
-      const allowedPaths = ['/', '/coming-soon', '/wishlist']
+      // Allow homepage, coming-soon, and waitlist pages
+      const allowedPaths = ['/', '/coming-soon', '/waitlist']
       const isAllowedPath = allowedPaths.some(path => pathname === path)
       
       // If not an allowed path, redirect to coming-soon
