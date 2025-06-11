@@ -1,4 +1,5 @@
 import { supabase } from './client'; // Assuming your Supabase client is exported from here
+import { supabasePublic } from './public-client'
 import { PostgrestError } from '@supabase/supabase-js';
 
 export interface UserProfile {
@@ -60,4 +61,31 @@ export const updateUserProfile = async (userId: string, updates: Partial<UserPro
   }
   
   return { data: data as UserProfile | null, error };
-}; 
+};
+
+// Add this interface for wishlist entries
+export interface WishlistEntry {
+  id?: string;
+  created_at?: string;
+  full_name: string;
+  email: string;
+  occupation: string | null;
+  favourite_games: string | null;
+  additional_message: string | null;
+}
+
+// Add this function to create wishlist entries
+export async function createWishlistEntry(entry: Omit<WishlistEntry, 'id' | 'created_at'>) {
+  const { data, error } = await supabase
+    .from('wishlist')
+    .insert([entry])
+    .select()
+    .single();
+
+  if (error) {
+    console.error('Supabase error:', error);
+    throw new Error(error.message);
+  }
+
+  return { data, error: null };
+} 

@@ -35,6 +35,7 @@ export function Navbar() {
   const router = useRouter()
   const pathname = usePathname()
   const [isScrolled, setIsScrolled] = useState(false)
+  const isProd = process.env.NODE_ENV === 'production'
 
   useEffect(() => {
     const handleScroll = () => {
@@ -68,6 +69,27 @@ export function Navbar() {
 
   const displayUsername = userProfile?.username || user?.email?.split('@')[0] || "User";
   const avatarUrl = userProfile?.avatar_url || null;
+
+  const renderAuthButtons = () => {
+    if (isProd) {
+      return (
+        <AnimatedButton variant="accent" asChild>
+          <Link href="/wishlist">Join Wishlist</Link>
+        </AnimatedButton>
+      );
+    }
+
+    return (
+      <>
+        <Button variant="outline" className="hidden sm:flex border-primary text-primary hover:bg-primary/10 hover:text-primary" asChild>
+          <Link href="/login">Log In</Link>
+        </Button>
+        <AnimatedButton variant="accent" asChild>
+          <Link href="/signup">Sign Up</Link>
+        </AnimatedButton>
+      </>
+    );
+  };
 
   return (
     <header 
@@ -188,14 +210,7 @@ export function Navbar() {
               </DropdownMenuContent>
             </DropdownMenu>
           ) : (
-            <>
-              <Button variant="outline" className="hidden sm:flex border-primary text-primary hover:bg-primary/10 hover:text-primary" asChild>
-                <Link href="/login">Log In</Link>
-              </Button>
-              <AnimatedButton variant="accent" asChild>
-                <Link href="/signup">Sign Up</Link>
-              </AnimatedButton>
-            </>
+            renderAuthButtons()
           )}
           <Button variant="ghost" size="icon" className="md:hidden">
             <Menu className="h-6 w-6" />

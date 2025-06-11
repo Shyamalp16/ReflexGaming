@@ -2,6 +2,10 @@ import type React from "react"
 import "@/app/globals.css"
 import type { Metadata } from "next"
 import { Inter } from "next/font/google"
+import { ThemeProvider } from "@/components/theme-provider"
+import { AuthProvider } from "@/context/AuthContext"
+import { Toaster } from "@/components/ui/toaster"
+import QueryProvider from "./components/QueryProvider"
 import { RootLayoutClient } from "./components/RootLayoutClient"
 
 const inter = Inter({ subsets: ["latin"] })
@@ -21,7 +25,10 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body className={inter.className}>
-        <RootLayoutClient>{children}</RootLayoutClient>
+        <RootLayoutClient>
+          {children}
+        </RootLayoutClient>
+        <Toaster />
       </body>
     </html>
   )

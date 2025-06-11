@@ -3,7 +3,6 @@
 import type React from "react"
 import { ThemeProvider } from "@/components/theme-provider"
 import { AuthProvider } from "@/context/AuthContext"
-import { Toaster } from "@/components/ui/toaster"
 import QueryProvider from "../components/QueryProvider"
 import { usePathname, useRouter } from 'next/navigation'
 import { useEffect } from 'react'
@@ -19,11 +18,11 @@ export function RootLayoutClient({
   useEffect(() => {
     // Only apply redirects in production mode
     if (process.env.NODE_ENV === 'production') {
-      // Only allow homepage and coming-soon page
-      const allowedPaths = ['/', '/coming-soon']
+      // Allow homepage, coming-soon, and wishlist pages
+      const allowedPaths = ['/', '/coming-soon', '/wishlist']
       const isAllowedPath = allowedPaths.some(path => pathname === path)
       
-      // If not homepage or coming-soon, redirect to coming-soon
+      // If not an allowed path, redirect to coming-soon
       if (!isAllowedPath) {
         router.replace('/coming-soon')
       }
@@ -35,7 +34,6 @@ export function RootLayoutClient({
       <AuthProvider>
         <QueryProvider>
           {children}
-          <Toaster />
         </QueryProvider>
       </AuthProvider>
     </ThemeProvider>
