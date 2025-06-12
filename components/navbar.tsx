@@ -1,11 +1,11 @@
 "use client"
 
 import Link from "next/link"
-import { Zap, Menu, UserCircle, LogOut, User as UserIcon, Settings } from "lucide-react"
+import { Zap, Menu, X, UserCircle, LogOut, User as UserIcon, Settings } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { ThemeToggle } from "@/components/theme-toggle"
 import { AnimatedButton } from "@/components/animated-button"
-import { motion } from "framer-motion"
+import { motion, AnimatePresence } from "framer-motion"
 import { useAuth } from "@/context/AuthContext"
 import {
   DropdownMenu,
@@ -17,7 +17,7 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { useRouter, usePathname } from "next/navigation"
-import { useEffect, useState } from "react"
+import { useEffect, useState, useRef } from "react"
 import { getUserProfile } from "@/lib/supabase/db"
 import { cn } from "@/lib/utils"
 import { useQuery } from "@tanstack/react-query"
@@ -35,6 +35,9 @@ export function Navbar() {
   const router = useRouter()
   const pathname = usePathname()
   const [isScrolled, setIsScrolled] = useState(false)
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
+  const mobileMenuRef = useRef<HTMLDivElement>(null)
+  const menuButtonRef = useRef<HTMLButtonElement>(null)
   const isProd = process.env.NODE_ENV === 'production'
 
   useEffect(() => {
@@ -44,6 +47,31 @@ export function Navbar() {
     window.addEventListener("scroll", handleScroll)
     return () => window.removeEventListener("scroll", handleScroll)
   }, [])
+
+  // Close mobile menu when route changes
+  useEffect(() => {
+    setIsMobileMenuOpen(false)
+  }, [pathname])
+
+  // Handle click outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        isMobileMenuOpen &&
+        mobileMenuRef.current &&
+        !mobileMenuRef.current.contains(event.target as Node) &&
+        menuButtonRef.current &&
+        !menuButtonRef.current.contains(event.target as Node)
+      ) {
+        setIsMobileMenuOpen(false)
+      }
+    }
+
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside)
+    }
+  }, [isMobileMenuOpen])
 
   // Use TanStack Query to fetch user profile
   const { 
@@ -70,10 +98,20 @@ export function Navbar() {
   const displayUsername = userProfile?.username || user?.email?.split('@')[0] || "User";
   const avatarUrl = userProfile?.avatar_url || null;
 
+  const handleSectionClick = (sectionId: string) => {
+    setIsMobileMenuOpen(false)
+    const element = document.getElementById(sectionId)
+    if (element) {
+      const yOffset = -100 // Adjust this value based on your header height
+      const y = element.getBoundingClientRect().top + window.pageYOffset + yOffset
+      window.scrollTo({ top: y, behavior: 'smooth' })
+    }
+  }
+
   const renderAuthButtons = () => {
     if (isProd) {
       return (
-        <AnimatedButton variant="accent" asChild>
+        <AnimatedButton variant="accent" className="whitespace-nowrap px-4 h-9" asChild>
           <Link href="/waitlist">Join Waitlist</Link>
         </AnimatedButton>
       );
@@ -81,13 +119,150 @@ export function Navbar() {
 
     return (
       <>
-        <Button variant="outline" className="hidden sm:flex border-primary text-primary hover:bg-primary/10 hover:text-primary" asChild>
+        <Button 
+          variant="outline" 
+          className="hidden sm:flex whitespace-nowrap px-4 h-9 border-primary text-primary hover:bg-primary/10 hover:text-primary" 
+          asChild
+        >
           <Link href="/login">Log In</Link>
         </Button>
-        <AnimatedButton variant="accent" asChild>
+        <AnimatedButton 
+          variant="accent" 
+          className="whitespace-nowrap px-4 h-9"
+          asChild
+        >
           <Link href="/signup">Sign Up</Link>
         </AnimatedButton>
       </>
+    );
+  };
+
+  const renderMobileMenu = () => {
+    return (
+      <AnimatePresence>
+        {isMobileMenuOpen && (
+          <motion.div
+            ref={mobileMenuRef}
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -20 }}
+            transition={{ duration: 0.2 }}
+            className="fixed inset-x-0 top-[72px] p-4 bg-background/95 backdrop-blur-lg border-b border-border md:hidden"
+          >
+            <nav className="flex flex-col space-y-4">
+              {user ? (
+                <>
+                  <Link
+                    href="/dashboard"
+                    className={`text-sm font-medium transition-colors px-4 py-2 rounded-md ${pathname === '/dashboard' ? 'bg-primary/10 text-primary' : 'hover:bg-muted'}`}
+                    onClick={() => setIsMobileMenuOpen(false)}
+                  >
+                    Dashboard
+                  </Link>
+                  <Link
+                    href="/my-sessions"
+                    className={`text-sm font-medium transition-colors px-4 py-2 rounded-md ${pathname === '/my-sessions' ? 'bg-primary/10 text-primary' : 'hover:bg-muted'}`}
+                    onClick={() => setIsMobileMenuOpen(false)}
+                  >
+                    My Sessions
+                  </Link>
+                  <Link
+                    href="/wallet"
+                    className={`text-sm font-medium transition-colors px-4 py-2 rounded-md ${pathname === '/wallet' ? 'bg-primary/10 text-primary' : 'hover:bg-muted'}`}
+                    onClick={() => setIsMobileMenuOpen(false)}
+                  >
+                    Wallet
+                  </Link>
+                  <div className="pt-4 border-t border-border">
+                    <Link
+                      href="/profile"
+                      className="flex items-center px-4 py-2 text-sm font-medium hover:bg-muted rounded-md"
+                      onClick={() => setIsMobileMenuOpen(false)}
+                    >
+                      <UserIcon className="mr-2 h-4 w-4" />
+                      Profile
+                    </Link>
+                    <Link
+                      href="/settings"
+                      className="flex items-center px-4 py-2 text-sm font-medium hover:bg-muted rounded-md"
+                      onClick={() => setIsMobileMenuOpen(false)}
+                    >
+                      <Settings className="mr-2 h-4 w-4" />
+                      Settings
+                    </Link>
+                    <button
+                      onClick={() => {
+                        handleLogout();
+                        setIsMobileMenuOpen(false);
+                      }}
+                      className="flex items-center w-full px-4 py-2 text-sm font-medium hover:bg-muted rounded-md"
+                    >
+                      <LogOut className="mr-2 h-4 w-4" />
+                      Log out
+                    </button>
+                  </div>
+                </>
+              ) : (
+                <>
+                  <button
+                    onClick={() => handleSectionClick('features')}
+                    className="text-left text-sm font-medium px-4 py-2 hover:bg-muted rounded-md"
+                  >
+                    Features
+                  </button>
+                  <button
+                    onClick={() => handleSectionClick('how-it-works')}
+                    className="text-left text-sm font-medium px-4 py-2 hover:bg-muted rounded-md"
+                  >
+                    How It Works
+                  </button>
+                  <button
+                    onClick={() => handleSectionClick('use-cases')}
+                    className="text-left text-sm font-medium px-4 py-2 hover:bg-muted rounded-md"
+                  >
+                    Use Cases
+                  </button>
+                  <button
+                    onClick={() => handleSectionClick('pricing')}
+                    className="text-left text-sm font-medium px-4 py-2 hover:bg-muted rounded-md"
+                  >
+                    Pricing
+                  </button>
+                  <div className="pt-4 border-t border-border space-y-2">
+                    {isProd ? (
+                      <Button 
+                        className="w-full bg-pink-500 hover:bg-pink-600 text-white" 
+                        asChild
+                        onClick={() => setIsMobileMenuOpen(false)}
+                      >
+                        <Link href="/waitlist">Join Waitlist</Link>
+                      </Button>
+                    ) : (
+                      <>
+                        <Button 
+                          className="w-full" 
+                          variant="outline" 
+                          asChild
+                          onClick={() => setIsMobileMenuOpen(false)}
+                        >
+                          <Link href="/login">Log In</Link>
+                        </Button>
+                        <Button 
+                          className="w-full bg-pink-500 hover:bg-pink-600 text-white" 
+                          asChild
+                          onClick={() => setIsMobileMenuOpen(false)}
+                        >
+                          <Link href="/signup">Sign Up</Link>
+                        </Button>
+                      </>
+                    )}
+                  </div>
+                </>
+              )}
+            </nav>
+          </motion.div>
+        )}
+      </AnimatePresence>
     );
   };
 
@@ -165,7 +340,7 @@ export function Navbar() {
           )}
         </nav>
 
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-2 sm:gap-4">
           <ThemeToggle />
           {authIsLoading ? ( // Use authIsLoading for the initial auth check loader
             <div className="h-9 w-20 animate-pulse bg-muted rounded-md"></div>
@@ -212,11 +387,22 @@ export function Navbar() {
           ) : (
             renderAuthButtons()
           )}
-          <Button variant="ghost" size="icon" className="md:hidden">
-            <Menu className="h-6 w-6" />
+          <Button 
+            ref={menuButtonRef}
+            variant="ghost" 
+            size="icon" 
+            className="md:hidden"
+            onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+          >
+            {isMobileMenuOpen ? (
+              <X className="h-6 w-6" />
+            ) : (
+              <Menu className="h-6 w-6" />
+            )}
           </Button>
         </div>
       </div>
+      {renderMobileMenu()}
     </header>
   )
 }
