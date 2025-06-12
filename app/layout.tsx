@@ -7,6 +7,7 @@ import { AuthProvider } from "@/context/AuthContext"
 import { Toaster } from "@/components/ui/toaster"
 import QueryProvider from "./components/QueryProvider"
 import { RootLayoutClient } from "./components/RootLayoutClient"
+import { Analytics } from "@vercel/analytics/react"
 
 const inter = Inter({ subsets: ["latin"] })
 
@@ -29,6 +30,7 @@ export default function RootLayout({
           {children}
         </RootLayoutClient>
         <Toaster />
+        <Analytics />
       </body>
     </html>
   )
