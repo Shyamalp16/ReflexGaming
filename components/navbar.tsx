@@ -41,12 +41,18 @@ export function Navbar() {
   const isProd = process.env.NODE_ENV === 'production'
 
   useEffect(() => {
+    let lastScroll = 0;
     const handleScroll = () => {
-      setIsScrolled(window.scrollY > 20)
+      const currentScroll = window.scrollY;
+      // Only update state if scroll difference is significant (prevent micro-adjustments)
+      if (Math.abs(currentScroll - lastScroll) > 10) {
+        setIsScrolled(currentScroll > 20);
+        lastScroll = currentScroll;
+      }
     }
-    window.addEventListener("scroll", handleScroll)
-    return () => window.removeEventListener("scroll", handleScroll)
-  }, [])
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
 
   // Close mobile menu when route changes
   useEffect(() => {
@@ -99,14 +105,27 @@ export function Navbar() {
   const avatarUrl = userProfile?.avatar_url || null;
 
   const handleSectionClick = (sectionId: string) => {
-    setIsMobileMenuOpen(false)
-    const element = document.getElementById(sectionId)
-    if (element) {
-      const yOffset = -100 // Adjust this value based on your header height
-      const y = element.getBoundingClientRect().top + window.pageYOffset + yOffset
-      window.scrollTo({ top: y, behavior: 'smooth' })
-    }
-  }
+    setIsMobileMenuOpen(false);
+    
+    // Wait for mobile menu to close before scrolling
+    setTimeout(() => {
+      const element = document.getElementById(sectionId);
+      if (element) {
+        // Get current viewport height to account for mobile browser UI
+        const viewportHeight = window.innerHeight;
+        const elementTop = element.getBoundingClientRect().top;
+        const elementPosition = elementTop + window.pageYOffset;
+        
+        // Adjust offset based on viewport height
+        const offset = viewportHeight * 0.1; // 10% of viewport height
+        
+        window.scrollTo({
+          top: elementPosition - offset,
+          behavior: 'smooth'
+        });
+      }
+    }, 300); // Wait for menu close animation
+  };
 
   const renderAuthButtons = () => {
     if (isProd) {

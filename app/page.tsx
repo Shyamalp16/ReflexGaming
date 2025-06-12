@@ -16,12 +16,12 @@ import { TypeAnimation } from "react-type-animation"
 
 export default function LandingPage() {
   return (
-    <div className="min-h-screen bg-background text-foreground bg-dark-radial">
+    <div className="min-h-screen bg-background text-foreground bg-dark-radial overflow-x-hidden">
       {/* Header */}
       <Navbar />
 
       {/* Hero Section */}
-      <section className="container mx-auto py-20 px-4">
+      <section className="container mx-auto py-20 px-4 min-h-[calc(100vh-5rem)]">
         <div className="grid md:grid-cols-2 gap-12 items-center">
           <div className="space-y-6">
             <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold leading-tight gradient-text">
@@ -126,7 +126,7 @@ export default function LandingPage() {
       </section>
 
       {/* Features Section */}
-      <section id="features" className="py-20 relative overflow-hidden">
+      <section id="features" className="py-20 relative overflow-hidden overscroll-none">
         <div className="container mx-auto px-4 relative z-10">
           <div className="text-center mb-16">
             <AnimatedText className="text-3xl md:text-4xl font-bold mb-4" gradient>
@@ -185,7 +185,7 @@ export default function LandingPage() {
       </section>
 
       {/* How It Works Section */}
-      <section id="how-it-works" className="py-20 relative overflow-hidden">
+      <section id="how-it-works" className="py-20 relative overflow-hidden overscroll-none">
         <div className="container mx-auto px-4 relative z-10">
           <div className="text-center mb-16">
             <AnimatedText className="text-3xl md:text-4xl font-bold mb-4" gradient>
@@ -201,7 +201,7 @@ export default function LandingPage() {
       </section>
 
       {/* Use Cases Section */}
-      <section id="use-cases" className="py-20 relative overflow-hidden">
+      <section id="use-cases" className="py-20 relative overflow-hidden overscroll-none">
         <div className="container mx-auto px-4 relative z-10">
           <div className="text-center mb-16">
             <AnimatedText className="text-3xl md:text-4xl font-bold mb-4" gradient>
@@ -373,7 +373,7 @@ export default function LandingPage() {
       </section>
 
       {/* Tech Requirements Section */}
-      <section className="py-20 relative overflow-hidden">
+      <section className="py-20 relative overflow-hidden overscroll-none">
         <div className="container mx-auto px-4 relative z-10">
           <div className="text-center mb-16">
             <AnimatedText className="text-3xl md:text-4xl font-bold mb-4" gradient>
@@ -389,7 +389,7 @@ export default function LandingPage() {
       </section>
 
       {/* Pricing Section */}
-      <section id="pricing" className="py-20 relative overflow-hidden">
+      <section id="pricing" className="py-20 relative overflow-hidden overscroll-none">
         <div className="container mx-auto px-4 relative z-10">
           <div className="text-center mb-16">
             <AnimatedText className="text-3xl md:text-4xl font-bold mb-4" gradient>
@@ -437,7 +437,7 @@ export default function LandingPage() {
       </section>
 
       {/* Final CTA Section */}
-      <section className="pt-20 pb-10 relative overflow-hidden">
+      <section className="pt-20 pb-10 relative overflow-hidden overscroll-none">
         <div className="container mx-auto px-4 text-center relative z-10">
           <AnimatedText className="text-3xl md:text-4xl font-bold mb-6" gradient>
             Ready to Transform Your Gaming Experience?
@@ -464,7 +464,7 @@ export default function LandingPage() {
       </section>
 
       {/* Footer */}
-      <footer className="bg-background border-border border-t-transparent pt-6 pb-12">
+      <footer className="bg-background border-t border-border pt-6 pb-12 relative">
         <div className="container mx-auto px-4">
           <div className="grid md:grid-cols-3 gap-8">
             <div>
